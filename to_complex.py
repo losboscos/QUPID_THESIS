@@ -74,8 +74,8 @@ def complex_partition(dataset, features, pmu_prefix):
     return np.column_stack(complex_features)
 
 def main():
-    dataset_archive = Path("dataset/scenarios")
-    output = Path("dataset/scenarios_complex")
+    dataset_archive = Path("dataset2/scenarios")
+    output = Path("dataset2/scenarios_complex")
 
     for file in dataset_archive.glob("*.npz"):
     

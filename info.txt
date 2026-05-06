@@ -1,0 +1,10 @@
+qupid 55% base
+qupid 64% strict angles range
+qupid 64.5% more strict angles range, excluding relay_log, including Status Flag, squared weights
+qupid 76.41% size hidden layer 128, more strict angles range, excluding relay_log, including Status Flag, squared weights
+
+qupid bin 68% strict angles range
+qupid bin 76% base
+qupid bin 76.9% angles range (-pi, pi)
+qupid bin 74% excluding relay_log, including Status Flag
+qupid bin 85% excluding relay_log, including Status Flag, squared weights

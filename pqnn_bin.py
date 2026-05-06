@@ -9,12 +9,13 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import WeightedRandomSampler
+from sklearn.metrics import f1_score, recall_score
 
 n_qubits = 5
 dev = qml.device("default.qubit", wires=n_qubits)
 
 def init_angles(tensor):
-    return torch.nn.init.uniform_(tensor, a=0.0, b=2*math.pi)
+    return torch.nn.init.uniform_(tensor, a=-math.pi, b=math.pi)
 
 def mapping_classes(old_marker):
     if old_marker in [1, 2, 3, 4, 5, 6, 13, 14, 41]:
@@ -50,12 +51,14 @@ def quantum_circuit(inputs, weights):
             # The operator modulo (%) ensures that the last qubit is entangled back to the first one, creating a loop
             target = (i + 1) % n_qubits 
             qml.CNOT(wires=[i, target])
+    
     """
     # 3. NOISE INJECTION (Depolarizing channel after the ansatz)
-    noise_probability = 0.00 # 5% chance of depolarization for each qubit
+    noise_probability = 0.01 # 1% chance of depolarization for each qubit
     for i in range(n_qubits):
         qml.DepolarizingChannel(noise_probability, wires=i)
     """
+    
     # Return 5 real expectation values instead of the 32-dim state vector
     return [qml.expval(qml.PauliZ(i)) for i in range(n_qubits)]
 
@@ -79,7 +82,7 @@ class QUPIDModel(nn.Module):
         self.classical_classifier = nn.Sequential(
             nn.Linear(20, 64),
             nn.ReLU(),
-            nn.Linear(64, 2)  # Output: 6 classes
+            nn.Linear(64, 2)  # Output: 2 classes
         )
 
     def forward(self, p1, p2, p3, p4):
@@ -100,7 +103,7 @@ class QUPIDModel(nn.Module):
         return final_prediction
 
 def main():
-    complex_dataset = Path("dataset/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
     
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_train_r1 = torch.tensor(data['x_train_r1'], dtype=torch.complex64)
@@ -120,11 +123,11 @@ def main():
         print(f"Feature of R3: {X_train_r3.shape[1]}")
         print(f"Feature of R4: {X_train_r4.shape[1]}")
         """
-
-        X_train_r1_cleaned = torch.cat((X_train_r1[:, :15], X_train_r1[:, 16:]), dim=1)
-        X_train_r2_cleaned = X_train_r2
-        X_train_r3_cleaned = torch.cat((X_train_r3[:, :15], X_train_r3[:, 16:]), dim=1)
-        X_train_r4_cleaned = torch.cat((X_train_r4[:, :15], X_train_r4[:, 16:]), dim=1)
+        
+        X_train_r1_cleaned = X_train_r1[:, :16]
+        X_train_r2_cleaned = X_train_r2[:, :16]
+        X_train_r3_cleaned = X_train_r3[:, :16]
+        X_train_r4_cleaned = X_train_r4[:, :16]
 
         BATCH_SIZE = 128
         dataset = torch.utils.data.TensorDataset(X_train_r1_cleaned, X_train_r2_cleaned, X_train_r3_cleaned, X_train_r4_cleaned, y_train_tensor)
@@ -154,10 +157,9 @@ def main():
 
         total_samples = 3232
         samples_per_class = [706, 2526]
-        num_classes = 2
-        balanced_weights = [total_samples / (num_classes * count) for count in samples_per_class]
-        weights_tensor = torch.tensor(balanced_weights, dtype=torch.float32).to(device)
-        criterion = nn.CrossEntropyLoss(weight=weights_tensor)
+        smoothed_weights = [math.sqrt(total_samples / count) for count in samples_per_class]
+        weights_tensor = torch.tensor(smoothed_weights, dtype=torch.float32).to(device)
+        criterion = nn.CrossEntropyLoss(weights_tensor)
         optimizer = optim.Adam(model.parameters(), lr=0.01)
         """
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(
@@ -212,8 +214,11 @@ def main():
 
             avg_loss = total_loss / len(dataloader)
             epoch_accuracy = (correct_predictions / total_samples) * 100
-            print(f"\n--- End of epoch {epoch+1} | Avg Loss: {avg_loss:.4f} | Accuracy: {epoch_accuracy:.2f}% | LR used: {optimizer.param_groups[0]['lr']:.4f} ---\n")
-            
+            recall_c0 = recall_score(all_targets, all_preds, pos_label=0, zero_division=0)
+            f1_c0 = f1_score(all_targets, all_preds, pos_label=0, zero_division=0)
+            print(f"\n--- End of epoch {epoch+1} | Avg Loss: {avg_loss:.4f} | Accuracy: {epoch_accuracy:.2f}% ---\n")
+            print(f"Recall for Class 0: {recall_c0:.4f} | F1 Score for Class 0: {f1_c0:.4f}")
+
             pred_counts = Counter(all_preds)
             true_counts = Counter(all_targets)
             print("\nDistribution of Predictions vs Reality:")

@@ -73,8 +73,8 @@ def evaluate_model(dataset, model_name):
     """
 
 def main():
-    complex_dataset = Path("dataset/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
-    model_name = "qupid_model_S1 (64% acc).pth" 
+    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    model_name = "qupid_model.pth" 
 
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_test_r1 = torch.tensor(data['x_test_r1'], dtype=torch.complex64)
@@ -88,10 +88,10 @@ def main():
         # Now we have 6 classes.
         y_test_tensor = torch.tensor(y_test_6_classes, dtype=torch.long)
 
-        X_test_r1_cleaned = torch.cat((X_test_r1[:, :15], X_test_r1[:, 16:]), dim=1)
-        X_test_r2_cleaned = X_test_r2
-        X_test_r3_cleaned = torch.cat((X_test_r3[:, :15], X_test_r3[:, 16:]), dim=1)
-        X_test_r4_cleaned = torch.cat((X_test_r4[:, :15], X_test_r4[:, 16:]), dim=1)
+        X_test_r1_cleaned = X_test_r1[:, :16]
+        X_test_r2_cleaned = X_test_r2[:, :16]
+        X_test_r3_cleaned = X_test_r3[:, :16]
+        X_test_r4_cleaned = X_test_r4[:, :16]
 
         dataset = torch.utils.data.TensorDataset(X_test_r1_cleaned, X_test_r2_cleaned, X_test_r3_cleaned, X_test_r4_cleaned, y_test_tensor)
 

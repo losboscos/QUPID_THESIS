@@ -14,7 +14,7 @@ n_qubits = 5
 dev = qml.device("default.qubit", wires=n_qubits)
 
 def init_angles(tensor):
-    return torch.nn.init.uniform_(tensor, a=-math.pi/4, b=math.pi/4)
+    return torch.nn.init.uniform_(tensor, a=-math.pi/6, b=math.pi/6)
 
 def mapping_classes(old_marker):
     if old_marker == 41:
@@ -87,9 +87,9 @@ class QUPIDModel(nn.Module):
         # The Classical part of the network that will take the merged quantum features
         # 4 PQC * 5 qubit = 20 feature total quantum features going into the classical dense layer
         self.classical_classifier = nn.Sequential(
-            nn.Linear(20, 64),
+            nn.Linear(20, 128),
             nn.ReLU(),
-            nn.Linear(64, 6)  # Output: 6 classes
+            nn.Linear(128, 6)  # Output: 6 classes
         )
 
     def forward(self, p1, p2, p3, p4):
@@ -110,7 +110,7 @@ class QUPIDModel(nn.Module):
         return final_prediction
 
 def main():
-    complex_dataset = Path("dataset/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
     
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_train_r1 = torch.tensor(data['x_train_r1'], dtype=torch.complex64)
@@ -131,10 +131,10 @@ def main():
         print(f"Feature of R4: {X_train_r4.shape[1]}")
         """
 
-        X_train_r1_cleaned = torch.cat((X_train_r1[:, :15], X_train_r1[:, 16:]), dim=1)
-        X_train_r2_cleaned = X_train_r2
-        X_train_r3_cleaned = torch.cat((X_train_r3[:, :15], X_train_r3[:, 16:]), dim=1)
-        X_train_r4_cleaned = torch.cat((X_train_r4[:, :15], X_train_r4[:, 16:]), dim=1)
+        X_train_r1_cleaned = X_train_r1[:, :16]
+        X_train_r2_cleaned = X_train_r2[:, :16]
+        X_train_r3_cleaned = X_train_r3[:, :16]
+        X_train_r4_cleaned = X_train_r4[:, :16]
 
         BATCH_SIZE = 128
         dataset = torch.utils.data.TensorDataset(X_train_r1_cleaned, X_train_r2_cleaned, X_train_r3_cleaned, X_train_r4_cleaned, y_train_tensor)
@@ -162,8 +162,11 @@ def main():
         model = QUPIDModel()
         model.to(device)
 
-        manual_weights = torch.tensor([4.64, 1.28, 3.15, 1.49, 1.75, 0.29], dtype=torch.float32).to(device)
-        criterion = nn.CrossEntropyLoss(weight=manual_weights)
+        total_samples = 3232
+        samples_per_class = [116, 419, 171, 361, 307, 1858]
+        smoothed_weights = [math.sqrt(total_samples / count) for count in samples_per_class]
+        weights_tensor = torch.tensor(smoothed_weights, dtype=torch.float32).to(device)
+        criterion = nn.CrossEntropyLoss(weight=weights_tensor)
         optimizer = optim.Adam(model.parameters(), lr=0.01)
         """
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(
