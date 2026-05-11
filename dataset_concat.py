@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import os
 
-dataset = Path("dataset/multiclass")
+dataset = Path("dataset2/multiclass")
 
 def main():
     dataframe = []
@@ -43,7 +43,7 @@ def main():
     print("Scaling completed successfully")
 
     # Saving data locally
-    output = Path("dataset/splitted_data")
+    output = Path("dataset2/scenarios_concatenated")
 
     # Creating folder if not exists
     os.makedirs(output, exist_ok=True)

@@ -7,3 +7,4 @@ torch
 tqdm
 matplotlib
 seaborn
+imbalanced-learn

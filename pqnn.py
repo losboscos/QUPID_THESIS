@@ -9,12 +9,15 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import WeightedRandomSampler
+import torch.nn.functional as F
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
+from imblearn.metrics import geometric_mean_score
 
 n_qubits = 5
 dev = qml.device("default.qubit", wires=n_qubits)
 
 def init_angles(tensor):
-    return torch.nn.init.uniform_(tensor, a=-math.pi/6, b=math.pi/6)
+    return torch.nn.init.uniform_(tensor, a=-math.pi, b=math.pi)
 
 def mapping_classes(old_marker):
     if old_marker == 41:
@@ -62,7 +65,7 @@ def quantum_circuit(inputs, weights):
             qml.CNOT(wires=[i, target])
     """
     # 3. NOISE INJECTION (Depolarizing channel after the ansatz)
-    noise_probability = 0.00 # 5% chance of depolarization for each qubit
+    noise_probability = 0.01 # 5% chance of depolarization for each qubit
     for i in range(n_qubits):
         qml.DepolarizingChannel(noise_probability, wires=i)
     """
@@ -87,9 +90,11 @@ class QUPIDModel(nn.Module):
         # The Classical part of the network that will take the merged quantum features
         # 4 PQC * 5 qubit = 20 feature total quantum features going into the classical dense layer
         self.classical_classifier = nn.Sequential(
-            nn.Linear(20, 128),
+            nn.Linear(20, 512),
             nn.ReLU(),
-            nn.Linear(128, 6)  # Output: 6 classes
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 6) # Output: 6 classes
         )
 
     def forward(self, p1, p2, p3, p4):
@@ -110,7 +115,7 @@ class QUPIDModel(nn.Module):
         return final_prediction
 
 def main():
-    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    complex_dataset = Path("dataset2/scenarios_complex/data2 Sampled Scenarios_scaled_complex.npz")
     
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_train_r1 = torch.tensor(data['x_train_r1'], dtype=torch.complex64)
@@ -162,11 +167,13 @@ def main():
         model = QUPIDModel()
         model.to(device)
 
+        """
         total_samples = 3232
         samples_per_class = [116, 419, 171, 361, 307, 1858]
         smoothed_weights = [math.sqrt(total_samples / count) for count in samples_per_class]
         weights_tensor = torch.tensor(smoothed_weights, dtype=torch.float32).to(device)
-        criterion = nn.CrossEntropyLoss(weight=weights_tensor)
+        """
+        criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=0.01)
         """
         scheduler = optim.lr_scheduler.ReduceLROnPlateau(
@@ -184,6 +191,7 @@ def main():
             total_samples = 0     
             all_preds = []
             all_targets = [] 
+            all_probs = []
             progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{EPOCHS}")
             for b_r1, b_r2, b_r3, b_r4, b_y in progress_bar:
                 b_r1, b_r2, b_r3, b_r4, b_y = b_r1.to(device), b_r2.to(device), b_r3.to(device), b_r4.to(device), b_y.to(device)
@@ -210,18 +218,35 @@ def main():
                 
                 total_loss += loss.item()
 
+                probs = F.softmax(logits, dim=1)
                 predictions = torch.argmax(logits, dim=1)
                 correct_predictions += (predictions == b_y).sum().item()
                 total_samples += b_y.size(0)
 
                 all_preds.extend(predictions.cpu().tolist())
                 all_targets.extend(b_y.cpu().tolist())
+                all_probs.extend(probs.detach().cpu().tolist())
                 
                 progress_bar.set_postfix({'loss': f"{loss.item():.4f}"})
 
             avg_loss = total_loss / len(dataloader)
+
             epoch_accuracy = (correct_predictions / total_samples) * 100
-            print(f"\n--- End of epoch {epoch+1} | Avg Loss: {avg_loss:.4f} | Accuracy: {epoch_accuracy:.2f}% | LR used: {optimizer.param_groups[0]['lr']:.4f} ---\n")
+            precision = precision_score(all_targets, all_preds, average='macro', zero_division=0)
+            recall = recall_score(all_targets, all_preds, average='macro', zero_division=0)
+            f1 = f1_score(all_targets, all_preds, average='macro', zero_division=0)
+            mcc = matthews_corrcoef(all_targets, all_preds)
+            g_mean = geometric_mean_score(all_targets, all_preds, average='macro')
+            roc_auc = roc_auc_score(all_targets, all_probs, multi_class='ovr', average='macro')
+
+            print(f"\n--- End of epoch {epoch+1} | Avg Loss: {avg_loss:.4f} | LR: {optimizer.param_groups[0]['lr']:.4f} ---")
+            print(f"Accuracy:  {epoch_accuracy:.2f}%")
+            print(f"Precision: {precision:.4f}")
+            print(f"Recall:    {recall:.4f}")
+            print(f"F1-Score:  {f1:.4f}")
+            print(f"ROC-AUC:   {roc_auc:.4f}")
+            print(f"MCC:       {mcc:.4f}")
+            print(f"G-Mean:    {g_mean:.4f}")
             
             pred_counts = Counter(all_preds)
             true_counts = Counter(all_targets)

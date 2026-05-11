@@ -5,6 +5,9 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 from pqnn import QUPIDModel, mapping_classes
 from pathlib import Path
+import torch.nn.functional as F
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
+from imblearn.metrics import geometric_mean_score
 
 def evaluate_model(dataset, model_name):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -20,6 +23,7 @@ def evaluate_model(dataset, model_name):
 
     all_preds = []
     all_targets = []
+    all_probs = []
 
     print("Starting evaluation...")
     with torch.no_grad():
@@ -33,19 +37,31 @@ def evaluate_model(dataset, model_name):
             
             logits = model(partition_1, partition_2, partition_3, partition_4)
             _, predicted_classes = torch.max(logits, 1) # Find the index of the max log-probability (predicted class)
-
+            probs = F.softmax(logits, dim=1)
             correct_predictions += (predicted_classes == b_y).sum().item()
             total_samples += b_y.size(0)
             
             all_preds.extend(predicted_classes.cpu().tolist())
             all_targets.extend(b_y.cpu().tolist())
+            all_probs.extend(probs.detach().cpu().tolist())
 
     print("\n" + "="*50 + "\n" + "RESULTS (TEST SET)" + "\n" + "="*50)
 
     test_accuracy = (correct_predictions / total_samples) * 100
-    print("-" * 60)
-    print(f"ACCURACY: {test_accuracy:.2f}%")
-    print("-" * 60)
+    precision = precision_score(all_targets, all_preds, average='macro', zero_division=0)
+    recall = recall_score(all_targets, all_preds, average='macro', zero_division=0)
+    f1 = f1_score(all_targets, all_preds, average='macro', zero_division=0)
+    mcc = matthews_corrcoef(all_targets, all_preds)
+    g_mean = geometric_mean_score(all_targets, all_preds, average='macro')
+    roc_auc = roc_auc_score(all_targets, all_probs, multi_class='ovr', average='macro')
+    
+    print(f"Accuracy:  {test_accuracy:.2f}%")
+    print(f"Precision: {precision:.4f}")
+    print(f"Recall:    {recall:.4f}")
+    print(f"F1-Score:  {f1:.4f}")
+    print(f"ROC-AUC:   {roc_auc:.4f}")
+    print(f"MCC:       {mcc:.4f}")
+    print(f"G-Mean:    {g_mean:.4f}")
 
     """
     # 1. Classification Report (Precision, Recall, F1-Score for each class)
@@ -73,7 +89,7 @@ def evaluate_model(dataset, model_name):
     """
 
 def main():
-    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    complex_dataset = Path("dataset2/scenarios_complex/data2 Sampled Scenarios_scaled_complex.npz")
     model_name = "qupid_model.pth" 
 
     with np.load(complex_dataset, allow_pickle=True) as data:

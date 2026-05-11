@@ -80,9 +80,9 @@ class QUPIDModel(nn.Module):
         # The Classical part of the network that will take the merged quantum features
         # 4 PQC * 5 qubit = 20 feature total quantum features going into the classical dense layer
         self.classical_classifier = nn.Sequential(
-            nn.Linear(20, 64),
+            nn.Linear(20, 128),
             nn.ReLU(),
-            nn.Linear(64, 2)  # Output: 2 classes
+            nn.Linear(128, 2)  # Output: 2 classes
         )
 
     def forward(self, p1, p2, p3, p4):
@@ -103,7 +103,7 @@ class QUPIDModel(nn.Module):
         return final_prediction
 
 def main():
-    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    complex_dataset = Path("dataset2/scenarios_concatenated/dataset_scaled_complex.npz")
     
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_train_r1 = torch.tensor(data['x_train_r1'], dtype=torch.complex64)
@@ -155,8 +155,8 @@ def main():
         model = QUPIDModel()
         model.to(device)
 
-        total_samples = 3232
-        samples_per_class = [706, 2526]
+        total_samples = 47218
+        samples_per_class = [13668, 33550]
         smoothed_weights = [math.sqrt(total_samples / count) for count in samples_per_class]
         weights_tensor = torch.tensor(smoothed_weights, dtype=torch.float32).to(device)
         criterion = nn.CrossEntropyLoss(weights_tensor)
