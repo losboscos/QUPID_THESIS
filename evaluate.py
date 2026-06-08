@@ -3,7 +3,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
-from pqnn import QUPIDModel, mapping_classes
+from r_pqnn import QUPIDModel, mapping_classes
 from pathlib import Path
 import torch.nn.functional as F
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
@@ -18,8 +18,8 @@ def evaluate_model(dataset, model_name):
     model.load_state_dict(torch.load(f'{model_name}', map_location=device))
     model.eval()
 
-    correct_predictions = 0 
-    total_samples = 0       
+    correct_predictions = 0
+    total_samples = 0
 
     all_preds = []
     all_targets = []
@@ -29,18 +29,18 @@ def evaluate_model(dataset, model_name):
     with torch.no_grad():
         for b_r1, b_r2, b_r3, b_r4, b_y in test_dataloader:
             b_r1, b_r2, b_r3, b_r4, b_y = b_r1.to(device), b_r2.to(device), b_r3.to(device), b_r4.to(device), b_y.to(device)
-            
-            partition_1 = torch.cat((b_r1, b_r2), dim=1) 
-            partition_2 = torch.cat((b_r2, b_r3), dim=1) 
-            partition_3 = torch.cat((b_r3, b_r4), dim=1) 
+
+            partition_1 = torch.cat((b_r1, b_r2), dim=1)
+            partition_2 = torch.cat((b_r2, b_r3), dim=1)
+            partition_3 = torch.cat((b_r3, b_r4), dim=1)
             partition_4 = torch.cat((b_r4, b_r1), dim=1)
-            
+
             logits = model(partition_1, partition_2, partition_3, partition_4)
             _, predicted_classes = torch.max(logits, 1) # Find the index of the max log-probability (predicted class)
             probs = F.softmax(logits, dim=1)
             correct_predictions += (predicted_classes == b_y).sum().item()
             total_samples += b_y.size(0)
-            
+
             all_preds.extend(predicted_classes.cpu().tolist())
             all_targets.extend(b_y.cpu().tolist())
             all_probs.extend(probs.detach().cpu().tolist())
@@ -54,7 +54,7 @@ def evaluate_model(dataset, model_name):
     mcc = matthews_corrcoef(all_targets, all_preds)
     g_mean = geometric_mean_score(all_targets, all_preds, average='macro')
     roc_auc = roc_auc_score(all_targets, all_probs, multi_class='ovr', average='macro')
-    
+
     print(f"Accuracy:  {test_accuracy:.2f}%")
     print(f"Precision: {precision:.4f}")
     print(f"Recall:    {recall:.4f}")
@@ -79,18 +79,18 @@ def evaluate_model(dataset, model_name):
     plt.title('Confusion Matrix QUPID (15 Qubit)')
     plt.ylabel('True Class')
     plt.xlabel('Predicted Class')
-    
+
     # Save the plot in high resolution for the thesis
     plt.savefig('confusion_matrix_qupid.png', dpi=300, bbox_inches='tight')
     print("\nConfusion Matrix saved as 'confusion_matrix_qupid.png'")
-    
+
     # Show the image on screen
     plt.show()
     """
 
 def main():
-    complex_dataset = Path("dataset2/scenarios_complex/data2 Sampled Scenarios_scaled_complex.npz")
-    model_name = "qupid_model.pth" 
+    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    model_name = "r_qupid_model.pth"
 
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_test_r1 = torch.tensor(data['x_test_r1'], dtype=torch.complex64)

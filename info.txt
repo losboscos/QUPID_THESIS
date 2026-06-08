@@ -2,6 +2,7 @@ qupid 55% base
 qupid 64% strict angles range
 qupid 64.5% more strict angles range, excluding relay_log, including Status Flag, squared weights
 qupid 76.41% size hidden layer 128, more strict angles range, excluding relay_log, including Status Flag, squared weights
+qupid 82.25% //////////////////////////////// + (a=-math.pi, b=math.pi) + first hidden layer (512) + second hidden layer (256) + QUANTUM NOISE + CLASSICAL NOISE
 qupid 83.33% //////////////////////////////// + (a=-math.pi, b=math.pi) + hidden layer (512) + QUANTUM NOISE
 qupid 83.62% //////////////////////////////// + (a=-math.pi/6, b=math.pi/6) + hidden layer (256)
 qupid 85.28% //////////////////////////////// + (a=-math.pi, b=math.pi) + hidden layer (512) + no weights
