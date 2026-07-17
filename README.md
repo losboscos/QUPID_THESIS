@@ -9,6 +9,6 @@
 6. evaluate.py: In this file there is the evaluation of QUPID models.
 7. fgsm.py: In this file there is the implementation of FGSM attack.
 
-/dataset2: this folder contains the data pre-processing, considering the new approach that replaces the feature "relay_log" with the feature "Status Flag".
+/dataset3: this folder contains the data pre-processing.
 /MODELS_QUPID: this folder contains all models trained during the work. In "info.txt" all models are explained.
 

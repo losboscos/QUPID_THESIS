@@ -115,7 +115,7 @@ class QUPIDModel(nn.Module):
         return final_prediction
 
 def main():
-    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    complex_dataset = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
     
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_train_r1 = torch.tensor(data['x_train_r1'], dtype=torch.complex64)
