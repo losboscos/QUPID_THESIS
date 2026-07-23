@@ -1,3 +1,9 @@
+# MAIN CURRENT MODELS
+1. Base QUPID: qupid_model_S1 (94.23% acc).pth 
+2. R-QUPID: model for bound L = 0.05: r_qupid_model_81_005.pth (81% accuracy)
+            model for bound L = 0.1: r_qupid_model_71_01.pth   (71% accuracy)
+
+# SOME PAST MODELS
 qupid 55% base
 qupid 64% strict angles range
 qupid 64.5% more strict angles range, excluding relay_log, including Status Flag, squared weights
@@ -19,3 +25,4 @@ qupid bin 76% base
 qupid bin 76.9% angles range (-pi, pi)
 qupid bin 74% excluding relay_log, including Status Flag
 qupid bin 85% excluding relay_log, including Status Flag, squared weights
+
