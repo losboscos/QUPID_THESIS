@@ -106,7 +106,7 @@ class SmoothQUPID:
 
 def main():
     complex_dataset = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
-    model_name = "r_qupid_model.pth"
+    model_name = Path("MODELS_R-QUPID/r_qupid_model_L01.pth")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device.type.upper()}")
 

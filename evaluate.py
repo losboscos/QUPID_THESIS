@@ -89,8 +89,8 @@ def evaluate_model(dataset, model_name):
     """
 
 def main():
-    complex_dataset = Path("dataset2/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
-    model_name = "r_qupid_model.pth"
+    complex_dataset = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    model_name = "qupid_model.pth"
 
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_test_r1 = torch.tensor(data['x_test_r1'], dtype=torch.complex64)

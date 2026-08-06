@@ -7,8 +7,12 @@
 4. pqnn.py: In this file there is the main code of QUPID: architecture and training.
 5. r_pqnn.py: In this file there is the main code of R-QUPID: architecture and training.
 6. evaluate.py: In this file there is the evaluation of base QUPID.
-7. fgsm.py: In this file there is the evaluation of R-QUPID.
+7. fgsm.py: In this file there is the evaluation of R-QUPID for FGSM attack.
+8. pgd.py: In this file there is the evaluation of R-QUPID for PGD attack. 
+9. pgdl2.py: In this file there is the evaluation of R-QUPID for PGDL2 attack. 
+10. eot.py: In this file there is the test with EoT (Expectation over Transformation) for attacks.
 
 /dataset3: this folder contains the data pre-processing.
-/MODELS_QUPID: this folder contains all models trained during the work. In "info.txt" all models are explained.
+/MODELS_QUPID: this folder contains all clean models trained during the work. In "info.txt" all models are explained.
+/MODELS_R-QUPID: this folder contains all robust models trained during the work. In "info.txt" all models are explained.
 

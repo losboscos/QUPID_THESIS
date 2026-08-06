@@ -1,7 +1,13 @@
 # MAIN CURRENT MODELS
-1. Base QUPID: qupid_model_S1 (94.23% acc).pth 
-2. R-QUPID: model for bound L = 0.05: r_qupid_model_81_005.pth (81% accuracy)
-            model for bound L = 0.1: r_qupid_model_71_01.pth   (71% accuracy)
+1. Base QUPID: qupid_model_S1 (94.66% acc).pth 
+2. R-QUPID: model for bound L = 0.05: r_qupid_model_L005.pth (81% accuracy for FGSM, similar for PGD)
+            model for bound L = 0.1: r_qupid_model_L01.pth   (71% accuracy for FGSM, similar for PGD)
+
+
+
+
+
+
 
 # SOME PAST MODELS
 qupid 55% base
