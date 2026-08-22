@@ -3,7 +3,8 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
-from r_pqnn import QUPIDModel, mapping_classes
+from r_pqnn import QUPIDModel
+from dataset import mapping_classes
 from pathlib import Path
 import torch.nn.functional as F
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef

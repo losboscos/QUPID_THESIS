@@ -10,12 +10,13 @@ import torchattacks
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
 from imblearn.metrics import geometric_mean_score
 # Import of same modules in order to have consistency between the training and testing
-from r_pqnn import QUPIDModel, compute_minimum_dot_product, compute_local_dp_parameters, mapping_classes, add_gaussian_noise 
+from r_pqnn import QUPIDModel, compute_minimum_dot_product, compute_local_dp_parameters, add_gaussian_noise
+from dataset import mapping_classes
 
-ATTACK_BOUND = 0.1  # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
-NOISE_PROBABILITY = 0.01   # Quantum noise
+ATTACK_BOUND = 0.05  # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
+NOISE_PROBABILITY = 0.0   # Quantum noise
 NUM_REAL_DIMENSIONS = 128  # 4 PMUs * 16 feature * 2 (Real, Imag)
-PGD_STEPS = 20             # passi del PGD (iterativo -> attacco piu' forte dell'FGSM)
+PGD_STEPS = 1            # 1 step corresponds to FGSM
 
 class QUPIDTorchattacksWrapper(nn.Module):
     """
@@ -113,7 +114,7 @@ class SmoothQUPID:
 
 def main():
     complex_dataset = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
-    model_name = Path("MODELS_R-QUPID/r_qupid_model_L01.pth")
+    model_name = Path("MODELS_R-QUPID/r_qupid_model_L005.pth")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device.type.upper()}")
 
@@ -171,8 +172,8 @@ def main():
         print("="*60)
         
         if eps_l2 > 0:
-            # EOTPGD is L-inf so we need sqrt(NUM_REAL_DIMENSIONS) as for FGSM
-            eps_pgd = eps_l2 / (2.0 * math.sqrt(NUM_REAL_DIMENSIONS))
+            # Fair L-inf: only the /2 for the [0,1]->[-1,1] wrapper mapping, no sqrt(128) rescaling
+            eps_pgd = eps_l2 / 2.0
             atk = torchattacks.EOTPGD(wrapper_model, eps=eps_pgd,
                                         alpha=2.5 * eps_pgd / PGD_STEPS, steps=PGD_STEPS, eot_iter=30, random_start=True)
             

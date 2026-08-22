@@ -12,28 +12,13 @@ from torch.utils.data import WeightedRandomSampler
 import torch.nn.functional as F
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
 from imblearn.metrics import geometric_mean_score
+from dataset import mapping_classes
 
 n_qubits = 5
 dev = qml.device("default.qubit", wires=n_qubits)
 
 def init_angles(tensor):
     return torch.nn.init.uniform_(tensor, a=-math.pi, b=math.pi)
-
-def mapping_classes(old_marker):
-    if old_marker == 41:
-        return 0  # Class 0: Normal
-    elif 1 <= old_marker <= 6:
-        return 1  # Class 1: Natural Events (Short Circuits)
-    elif 13 <= old_marker <= 14:
-        return 2  # Class 2: Natural Events (Line Maintenance)
-    elif 7 <= old_marker <= 12:
-        return 3  # Class 3: Data Injection Attacks
-    elif 15 <= old_marker <= 20:
-        return 4  # Class 4: Remote Tripping Command Injection 
-    elif 21 <= old_marker <= 40:
-        return 5  # Class 5: Relay Setting Change 
-    else:
-        raise ValueError(f"Unknown marker: {old_marker}")
 
 @qml.qnode(dev, interface="torch", diff_method="backprop")
 def quantum_circuit(inputs, weights):

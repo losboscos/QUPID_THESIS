@@ -7,6 +7,24 @@ import os
 
 dataset = Path("dataset2/multiclass")
 
+def mapping_classes(old_marker):
+    """Canonical 6-class label mapping, single source of truth for the whole repo.
+    Imported everywhere as `from dataset import mapping_classes`."""
+    if old_marker == 41:
+        return 0  # Class 0: Normal
+    elif 1 <= old_marker <= 6:
+        return 1  # Class 1: Natural Events (Short Circuits)
+    elif 13 <= old_marker <= 14:
+        return 2  # Class 2: Natural Events (Line Maintenance)
+    elif 7 <= old_marker <= 12:
+        return 3  # Class 3: Data Injection Attacks
+    elif 15 <= old_marker <= 20:
+        return 4  # Class 4: Remote Tripping Command Injection
+    elif 21 <= old_marker <= 40:
+        return 5  # Class 5: Relay Setting Change
+    else:
+        raise ValueError(f"Unknown marker: {old_marker}")
+
 def main():
     dataframe = []
     for file in dataset.glob("*.csv"):

@@ -1,7 +1,9 @@
 # MAIN CURRENT MODELS
-1. Base QUPID: qupid_model_S1 (94.66% acc).pth 
-2. R-QUPID: model for bound L = 0.05: r_qupid_model_L005.pth (81% accuracy for FGSM, similar for PGD)
-            model for bound L = 0.1: r_qupid_model_L01.pth   (71% accuracy for FGSM, similar for PGD)
+1. Base QUPID: qupid_model_S1 (94.66% acc).pth
+2. R-QUPID: model for bound L = 0.05: r_qupid_model_L005.pth (clean-smoothed ~81%; this is the paper's FGSM/PGD number, reproduced as a gradient-masking no-op; ~35% under a fair backprop attack)
+            model for bound L = 0.1: r_qupid_model_L01.pth   (clean-smoothed ~71%, same story)
+3. Baselines (classical, in /BASELINES): FTTransformer.pth, MTL_LSTM.pth, QH_DNN.pth (clean, reproduce the paper's Table 1 accuracies)
+            robust FTTransformer (noise-aware, z-scored): r_FTTransformer_s{sigma}.pth (genuine randomized-smoothing robustness, e.g. s0.4472 = 86.8% clean / 75% under FGSM)
 
 
 

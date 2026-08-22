@@ -11,31 +11,15 @@ from collections import Counter
 import pennylane as qml
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
 from imblearn.metrics import geometric_mean_score
+from dataset import mapping_classes
 
 n_qubits = 5
-dev = qml.device("default.mixed", wires=n_qubits)
-
-ATTACK_BOUND = 0.1        # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
-NOISE_PROBABILITY = 0.01   # Quantum noise
+ATTACK_BOUND = 0.05        # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
+NOISE_PROBABILITY = 0.01   # Quantum depolarizing noise 
+dev = qml.device("default.mixed" if NOISE_PROBABILITY > 0 else "default.qubit", wires=n_qubits)
 
 def init_angles(tensor):
     return torch.nn.init.uniform_(tensor, a=-math.pi, b=math.pi)
-
-def mapping_classes(old_marker):
-    if old_marker == 41:
-        return 0  # Class 0: Normal
-    elif 1 <= old_marker <= 6:
-        return 1  # Class 1: Natural Events (Short Circuits)
-    elif 13 <= old_marker <= 14:
-        return 2  # Class 2: Natural Events (Line Maintenance)
-    elif 7 <= old_marker <= 12:
-        return 3  # Class 3: Data Injection Attacks
-    elif 15 <= old_marker <= 20:
-        return 4  # Class 4: Remote Tripping Command Injection 
-    elif 21 <= old_marker <= 40:
-        return 5  # Class 5: Relay Setting Change 
-    else:
-        raise ValueError(f"Unknown marker: {old_marker}")
 
 def add_gaussian_noise(pmu_tensor, sigma_sq):
     """ Gaussian noise injection in cartesian coordinates (real and imaginary) """
@@ -58,7 +42,7 @@ def add_gaussian_noise(pmu_tensor, sigma_sq):
 
 def compute_minimum_dot_product(complex_features):
     """
-    Computation of the minimum dot product phi (|⟨x|x'⟩|^2) 
+    Computation of the minimum dot product phi (|⟨x|x'⟩|^2)
     between all pairs of complex samples in the dataset.
     """
     norms = np.linalg.norm(complex_features, axis=1, keepdims=True)
@@ -75,16 +59,16 @@ def compute_local_dp_parameters(epsilon_target, delta_target, p, phi, delta_L=1.
     """
     local_epsilon = epsilon_target / K
     denominator = K * (1.0 - p) * math.sqrt(1.0 - phi)
-    
+
     if denominator <= 0:
         raise ValueError("The denominator for the delta calculation is <= 0.")
-        
+
     local_delta = delta_target / denominator
     term_log = 1.25 / local_delta
-    
+
     if term_log <= 0:
         raise ValueError("The value for the logarithm in sigma is not valid.")
-        
+
     sigma = math.sqrt(2.0 * math.log(term_log)) * (delta_L / local_epsilon)
     return local_epsilon, local_delta, sigma
 
@@ -95,22 +79,22 @@ def quantum_circuit(inputs, weights):
     """
     # 1. The Encoder
     qml.AmplitudeEmbedding(
-        features=inputs, 
-        wires=range(n_qubits), 
+        features=inputs,
+        wires=range(n_qubits),
         pad_with=0j,
         normalize=True
     )
-    
+
     # 2. The Trainable Ansatz
     for layer in range(3):
         for i in range(n_qubits):
             qml.RY(weights[layer, i, 0], wires=i)
             qml.RZ(weights[layer, i, 1], wires=i)
-            
+
         for i in range(n_qubits):
-            target = (i + 1) % n_qubits 
+            target = (i + 1) % n_qubits
             qml.CNOT(wires=[i, target])
-    
+
     # 3. NOISE INJECTION (Depolarizing channel after the ansatz)
     if NOISE_PROBABILITY > 0:
         for i in range(n_qubits):
@@ -123,12 +107,12 @@ class QUPIDModel(nn.Module):
         super().__init__()
         weight_shapes = {"weights": (3, n_qubits, 2)}
         custom_init = {"weights": init_angles}
-        
+
         self.pqc_p1 = qml.qnn.TorchLayer(quantum_circuit, weight_shapes, init_method=custom_init)
         self.pqc_p2 = qml.qnn.TorchLayer(quantum_circuit, weight_shapes, init_method=custom_init)
         self.pqc_p3 = qml.qnn.TorchLayer(quantum_circuit, weight_shapes, init_method=custom_init)
         self.pqc_p4 = qml.qnn.TorchLayer(quantum_circuit, weight_shapes, init_method=custom_init)
-        
+
         self.classical_classifier = nn.Sequential(
             nn.Linear(20, 512),
             nn.ReLU(),
@@ -138,29 +122,29 @@ class QUPIDModel(nn.Module):
         )
 
     def forward(self, p1, p2, p3, p4):
-        out_1 = self.pqc_p1(p1) 
+        out_1 = self.pqc_p1(p1)
         out_2 = self.pqc_p2(p2)
         out_3 = self.pqc_p3(p3)
         out_4 = self.pqc_p4(p4)
-        
+
         joined_quantum_features = torch.cat((out_1, out_2, out_3, out_4), dim=1)
         joined_quantum_features = joined_quantum_features.real.float()
-        
+
         target_device = next(self.classical_classifier.parameters()).device
         joined_quantum_features = joined_quantum_features.to(target_device)
         final_prediction = self.classical_classifier(joined_quantum_features)
-        
+
         return final_prediction
 
 def main():
     complex_dataset = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
-    
+
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_train_r1 = torch.tensor(data['x_train_r1'], dtype=torch.complex64)
         X_train_r2 = torch.tensor(data['x_train_r2'], dtype=torch.complex64)
         X_train_r3 = torch.tensor(data['x_train_r3'], dtype=torch.complex64)
         X_train_r4 = torch.tensor(data['x_train_r4'], dtype=torch.complex64)
-        
+
         y_train = torch.tensor(data['y_train'], dtype=torch.long)
         y_train_6_classes = [mapping_classes(y.item()) for y in y_train]
         y_train_tensor = torch.tensor(y_train_6_classes, dtype=torch.long)
@@ -180,20 +164,20 @@ def main():
         phi_r2 = compute_minimum_dot_product(P2_train)
         phi_r3 = compute_minimum_dot_product(P3_train)
         phi_r4 = compute_minimum_dot_product(P4_train)
-        
+
         print(f"Minimum dot product (phi) R1: {phi_r1}")
         print(f"Minimum dot product (phi) R2: {phi_r2}")
         print(f"Minimum dot product (phi) R3: {phi_r3}")
         print(f"Minimum dot product (phi) R4: {phi_r4}")
 
-        eps_t, del_t = 20.0, 1e-5 # Target global DP parameters (epsilon, delta)
+        eps_t, del_t = 20.0, 1e-5  # Target global DP parameters (epsilon, delta)
 
         # Compute local DP parameters for each partition
         eps_loc_1, del_loc_1, sigma_val_1 = compute_local_dp_parameters(eps_t, del_t, NOISE_PROBABILITY, phi_r1, delta_L=ATTACK_BOUND)
         eps_loc_2, del_loc_2, sigma_val_2 = compute_local_dp_parameters(eps_t, del_t, NOISE_PROBABILITY, phi_r2, delta_L=ATTACK_BOUND)
         eps_loc_3, del_loc_3, sigma_val_3 = compute_local_dp_parameters(eps_t, del_t, NOISE_PROBABILITY, phi_r3, delta_L=ATTACK_BOUND)
         eps_loc_4, del_loc_4, sigma_val_4 = compute_local_dp_parameters(eps_t, del_t, NOISE_PROBABILITY, phi_r4, delta_L=ATTACK_BOUND)
-        
+
         print(f"R1 -> Local Epsilon: {eps_loc_1:.2f}, Local Delta: {del_loc_1:.2e}, Sigma: {sigma_val_1:.4f}")
         print(f"R2 -> Local Epsilon: {eps_loc_2:.2f}, Local Delta: {del_loc_2:.2e}, Sigma: {sigma_val_2:.4f}")
         print(f"R3 -> Local Epsilon: {eps_loc_3:.2f}, Local Delta: {del_loc_3:.2e}, Sigma: {sigma_val_3:.4f}")
@@ -214,7 +198,7 @@ def main():
 
         print("Instantiating the Hybrid R-QUPID Model...")
         model = QUPIDModel().to(device)
-        
+
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=0.01)
 
@@ -224,19 +208,19 @@ def main():
 
         for epoch in range(EPOCHS):
             total_loss = 0.0
-            correct_predictions = 0 
-            total_samples = 0     
+            correct_predictions = 0
+            total_samples = 0
             all_preds = []
-            all_targets = [] 
+            all_targets = []
             all_probs = []
-            
+
             progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}/{EPOCHS}")
             for b_r1, b_r2, b_r3, b_r4, b_y in progress_bar:
                 b_r1, b_r2, b_r3, b_r4, b_y = b_r1.to(device), b_r2.to(device), b_r3.to(device), b_r4.to(device), b_y.to(device)
 
-                partition_1 = torch.cat((b_r1, b_r2), dim=1) 
-                partition_2 = torch.cat((b_r2, b_r3), dim=1) 
-                partition_3 = torch.cat((b_r3, b_r4), dim=1) 
+                partition_1 = torch.cat((b_r1, b_r2), dim=1)
+                partition_2 = torch.cat((b_r2, b_r3), dim=1)
+                partition_3 = torch.cat((b_r3, b_r4), dim=1)
                 partition_4 = torch.cat((b_r4, b_r1), dim=1)
 
                 # Gaussian noise injection for Differential Privacy (DP) in each partition
@@ -246,14 +230,14 @@ def main():
                 partition_4 = add_gaussian_noise(partition_4, sigma_sq_4)
 
                 optimizer.zero_grad()
-                
+
                 logits = model(partition_1, partition_2, partition_3, partition_4)
                 loss = criterion(logits, b_y)
                 loss.backward()
-                
+
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 optimizer.step()
-                
+
                 total_loss += loss.item()
 
                 probs = F.softmax(logits, dim=1)
@@ -264,7 +248,7 @@ def main():
                 all_preds.extend(predictions.cpu().tolist())
                 all_targets.extend(b_y.cpu().tolist())
                 all_probs.extend(probs.detach().cpu().tolist())
-                
+
                 progress_bar.set_postfix({'loss': f"{loss.item():.4f}"})
 
             avg_loss = total_loss / len(dataloader)
@@ -274,7 +258,10 @@ def main():
             f1 = f1_score(all_targets, all_preds, average='macro', zero_division=0)
             mcc = matthews_corrcoef(all_targets, all_preds)
             g_mean = geometric_mean_score(all_targets, all_preds, average='macro')
-            roc_auc = roc_auc_score(all_targets, all_probs, multi_class='ovr', average='macro')
+            try:
+                roc_auc = roc_auc_score(all_targets, all_probs, multi_class='ovr', average='macro')
+            except ValueError:
+                roc_auc = 0.0
 
             print(f"\n--- End of epoch {epoch+1} | Avg Loss: {avg_loss:.4f} | LR: {optimizer.param_groups[0]['lr']:.4f} ---")
             print(f"Accuracy:  {epoch_accuracy:.2f}%")
@@ -293,11 +280,11 @@ def main():
                 t_count = true_counts.get(class_idx, 0)
                 print(f"Class {class_idx}: Predicted {p_count} times | (In reality there were {t_count})")
             print("-" * 60 + "\n")
-            
+
             if epoch == 0 or avg_loss < best_loss:
                 best_loss = avg_loss
-                torch.save(model.state_dict(), f"r_qupid_model.pth")
+                torch.save(model.state_dict(), "r_qupid_model.pth")
                 print(f"New best model saved with avg loss {best_loss:.4f} and accuracy {epoch_accuracy:.2f}%\n")
-        
+
 if __name__ == "__main__":
     main()
