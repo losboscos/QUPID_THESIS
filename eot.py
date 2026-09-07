@@ -164,16 +164,16 @@ def main():
     smoothed_classifier = SmoothQUPID(model, num_classes=6, sigmas_sq=sigmas_sq)
 
     # epsilons defined as a list of L2 bounds for the EOTPGD attack
-    epsilons_l2 = [0.0, 0.05, 0.1]
+    epsilons = [0.0, 0.05, 0.1]
 
-    for eps_l2 in epsilons_l2:
+    for eps in epsilons:
         print(f"\n" + "="*60)
-        print(f"EVALUATING EOTPGD ATTACK | TARGET L2 BOUND = {eps_l2}")
+        print(f"EVALUATING EOTPGD ATTACK | FAIR L-inf BOUND = {eps}")
         print("="*60)
         
-        if eps_l2 > 0:
+        if eps > 0:
             # Fair L-inf: only the /2 for the [0,1]->[-1,1] wrapper mapping, no sqrt(128) rescaling
-            eps_pgd = eps_l2 / 2.0
+            eps_pgd = eps / 2.0
             atk = torchattacks.EOTPGD(wrapper_model, eps=eps_pgd,
                                         alpha=2.5 * eps_pgd / PGD_STEPS, steps=PGD_STEPS, eot_iter=30, random_start=True)
             
@@ -183,11 +183,11 @@ def main():
         all_targets = []
         all_probs = []
         
-        progress_bar = tqdm(dataloader, desc=f"Testing eps_L2={eps_l2}")
+        progress_bar = tqdm(dataloader, desc=f"Testing eps_Linf={eps}")
         for b_r1, b_r2, b_r3, b_r4, b_y in progress_bar:
             b_r1, b_r2, b_r3, b_r4, b_y = b_r1.to(device), b_r2.to(device), b_r3.to(device), b_r4.to(device), b_y.to(device)
             
-            if eps_l2 > 0:
+            if eps > 0:
                 real_inputs = prepare_data_for_torchattacks(b_r1, b_r2, b_r3, b_r4)
                 adv_real_tensor = atk(real_inputs, b_y)
                 
@@ -230,7 +230,7 @@ def main():
         except ValueError:
             roc_auc = 0.0
 
-        print(f"\nResults for EOTPGD (Linf eps={eps_l2}):")
+        print(f"\nResults for EOTPGD (Linf eps={eps}):")
         print(f"Accuracy:  {test_accuracy:.2f}%")
         print(f"Precision: {precision:.4f}")
         print(f"Recall:    {recall:.4f}")

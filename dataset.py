@@ -50,9 +50,11 @@ def main():
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
 
         scaler = MinMaxScaler()
+        # Fit transform on Train Set. 
+        # Because the scaler is fitted on the train set, it will learn the min and max values of the train set.
         X_train_scaled = scaler.fit_transform(X_train)
 
-        # 3. ONLY TRANSFORM on Test Set.
+        # ONLY TRANSFORM on Test Set.
         # The scaler uses old min and max of train to scale new data.
         X_test_scaled = scaler.transform(X_test)
 

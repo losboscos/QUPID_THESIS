@@ -26,9 +26,6 @@ class QUPIDTorchattacksWrapper(nn.Module):
         self.model = qupid_model
 
     def forward(self, x):
-        # Gradient masking: no gradient path from the loss back to the external input
-        x = x.detach()
-
         # Convert the input tensor from [0, 1] to [-1, 1] for both real and imaginary parts
         reals = x[:, :, :, 0] * 2.0 - 1.0
         imags = x[:, :, :, 1] * 2.0 - 1.0
@@ -59,19 +56,22 @@ def prepare_data_for_torchattacks(b_r1, b_r2, b_r3, b_r4):
     return torch.stack([reals_norm, imags_norm], dim=-1)
 
 def pgd_attack(wrapper_model, x, y, eps, alpha, steps):
-    # With the masked wrapper the input gradient is 0 (or None) at every step -> x_adv == x -> no-op
+    # Honest wrapper + backprop -> the input gradient is real at every step, so the attack lands.
+    # (Contrast with PARAMETER-SHIFT/pgd.py: there the quantum-native gradient is NaN -> no-op.)
     x_orig = x.clone().detach()
     x_adv = x.clone().detach()
+    last_grad = torch.zeros_like(x)
     for _ in range(steps):
         x_adv = x_adv.clone().detach().requires_grad_(True)
         loss = F.cross_entropy(wrapper_model(x_adv), y)
         grad = torch.autograd.grad(loss, x_adv, allow_unused=True)[0]
         if grad is None:
             grad = torch.zeros_like(x_adv)
+        last_grad = grad
         x_adv = (x_adv + alpha * grad.sign()).detach()
         delta = torch.clamp(x_adv - x_orig, min=-eps, max=eps)
         x_adv = (x_orig + delta).detach()
-    return x_adv
+    return x_adv, last_grad
 
 class SmoothQUPID:
     def __init__(self, base_classifier: nn.Module, num_classes: int, sigmas_sq: list):
@@ -175,12 +175,14 @@ def main():
     sigmas_sq = [sigma_val_1**2, sigma_val_2**2, sigma_val_3**2, sigma_val_4**2]
     smoothed_classifier = SmoothQUPID(model, num_classes=6, sigmas_sq=sigmas_sq)
 
-    # epsilons defined as a list of L2 bounds for the PGD attack
-    epsilons_l2 = [0.0, 0.05, 0.1]
+    # eps = 0.0 -> no attack: gives the CLEAN-SMOOTHED accuracy (~81%; the paper reports ~79% "under PGD").
+    # eps > 0  -> the real attack. The eps is halved because the wrapper maps [0,1] -> [-1,1] (x2):
+    # that is the FAIR L-inf budget, the same per-feature magnitude the classical baselines receive.
+    epsilons = [0.0, 0.05, 0.1]
 
-    for eps_l2 in epsilons_l2:
+    for eps in epsilons:
         print(f"\n" + "="*60)
-        print(f"EVALUATING PGD ATTACK | TARGET L2 BOUND = {eps_l2}")
+        print(f"EVALUATING PGD ATTACK | FAIR L-inf BOUND = {eps}")
         print("="*60)
 
         correct_predictions = 0
@@ -188,15 +190,19 @@ def main():
         all_preds = []
         all_targets = []
         all_probs = []
+        grad_norm_sum, delta_sum, n_batches = 0.0, 0.0, 0
 
-        progress_bar = tqdm(dataloader, desc=f"Testing eps_L2={eps_l2}")
+        progress_bar = tqdm(dataloader, desc=f"Testing eps_Linf={eps}")
         for b_r1, b_r2, b_r3, b_r4, b_y in progress_bar:
             b_r1, b_r2, b_r3, b_r4, b_y = b_r1.to(device), b_r2.to(device), b_r3.to(device), b_r4.to(device), b_y.to(device)
 
-            if eps_l2 > 0:
-                eps_pgd = eps_l2 / 2.0
+            if eps > 0:
+                eps_pgd = eps / 2.0
                 real_inputs = prepare_data_for_torchattacks(b_r1, b_r2, b_r3, b_r4)
-                adv_real_tensor = pgd_attack(wrapper_model, real_inputs, b_y, eps_pgd, 2.5 * eps_pgd / PGD_STEPS, PGD_STEPS)
+                adv_real_tensor, grad = pgd_attack(wrapper_model, real_inputs, b_y, eps_pgd, 2.5 * eps_pgd / PGD_STEPS, PGD_STEPS)
+                grad_norm_sum += float(grad.norm())
+                delta_sum += float((adv_real_tensor - real_inputs).norm())
+                n_batches += 1
 
                 reals = adv_real_tensor[:, :, :, 0] * 2.0 - 1.0
                 imags = adv_real_tensor[:, :, :, 1] * 2.0 - 1.0
@@ -237,7 +243,11 @@ def main():
         except ValueError:
             roc_auc = 0.0
 
-        print(f"\nResults for PGD (L2 eps={eps_l2}):")
+        if n_batches:
+            print(f"\n  mean input-gradient norm: {grad_norm_sum / n_batches:.6f}   (> 0 = real gradient)")
+            print(f"  mean ||x_adv - x||_2:     {delta_sum / n_batches:.6f}   (> 0 = the attack lands)")
+
+        print(f"\nResults for PGD (fair L-inf eps={eps}):")
         print(f"Accuracy:  {test_accuracy:.2f}%")
         print(f"Precision: {precision:.4f}")
         print(f"Recall:    {recall:.4f}")

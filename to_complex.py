@@ -34,8 +34,7 @@ def complex_partition(dataset, features, pmu_prefix):
                 # Euler's formula: z = V * exp(i * angle).
                 # The PA column is an angle in DEGREES (-180..180) that MinMaxScaler squashed to
                 # [0,1]. Feeding it straight in as radians confines every phasor to a ~1 rad (57 deg)
-                # cone, so all encoded states end up in the same positive orthant (measured:
-                # min |<x|x'>|^2 = 0.19, vs ~1/32 = 0.03 for well-spread 32-dim states) -> razor-thin
+                # cone, so all encoded states end up in the same positive orthant -> razor-thin
                 # class margins -> catastrophic adversarial fragility. Rescale to the full circle.
                 complex_vector = magnitude_v * np.exp(1j * 2.0 * np.pi * angle)
                 complex_features.append(complex_vector)

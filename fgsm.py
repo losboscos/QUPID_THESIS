@@ -19,16 +19,12 @@ NUM_REAL_DIMENSIONS = 128  # 4 PMUs * 16 feature * 2 (Real, Imag)
 class QUPIDTorchattacksWrapper(nn.Module):
     """
     Wrapper that interacts in the real space [0, 1] by mapping the Cartesian coordinates (Real, Imag) of phasors.
-    The input is detached before the encoder, so the attack gradient cannot reach it (gradient masking).
     """
     def __init__(self, qupid_model):
         super().__init__()
         self.model = qupid_model
 
     def forward(self, x):
-        # Gradient masking: no gradient path from the loss back to the external input
-        x = x.detach()
-
         # Convert the input tensor from [0, 1] to [-1, 1] for both real and imaginary parts
         reals = x[:, :, :, 0] * 2.0 - 1.0
         imags = x[:, :, :, 1] * 2.0 - 1.0
@@ -59,13 +55,12 @@ def prepare_data_for_torchattacks(b_r1, b_r2, b_r3, b_r4):
     return torch.stack([reals_norm, imags_norm], dim=-1)
 
 def fgsm_attack(wrapper_model, x, y, eps):
-    # With the masked wrapper the input gradient is 0 (or None) -> x_adv == x -> no-op attack
     x = x.clone().detach().requires_grad_(True)
     loss = F.cross_entropy(wrapper_model(x), y)
     grad = torch.autograd.grad(loss, x, allow_unused=True)[0]
     if grad is None:
         grad = torch.zeros_like(x)
-    return (x + eps * grad.sign()).detach()
+    return (x + eps * grad.sign()).detach(), grad
 
 class SmoothQUPID:
     def __init__(self, base_classifier: nn.Module, num_classes: int, sigmas_sq: list):
@@ -169,12 +164,14 @@ def main():
     sigmas_sq = [sigma_val_1**2, sigma_val_2**2, sigma_val_3**2, sigma_val_4**2]
     smoothed_classifier = SmoothQUPID(model, num_classes=6, sigmas_sq=sigmas_sq)
 
-    # epsilons defined as a list of L2 bounds for the FGSM attack
-    epsilons_l2 = [0.05, 0.1]
+    # eps = 0.0 -> no attack: gives the CLEAN-SMOOTHED accuracy (~81%, i.e. the number the paper reports).
+    # eps > 0  -> the real attack. The eps is halved because the wrapper maps [0,1] -> [-1,1] (x2):
+    # that is the FAIR L-inf budget, the same per-feature magnitude the classical baselines receive.
+    epsilons = [0.0, 0.05, 0.1]
 
-    for eps_l2 in epsilons_l2:
+    for eps in epsilons:
         print(f"\n" + "="*60)
-        print(f"EVALUATING FGSM ATTACK | TARGET L2 BOUND = {eps_l2}")
+        print(f"EVALUATING FGSM ATTACK | FAIR L-inf BOUND = {eps}")
         print("="*60)
 
         correct_predictions = 0
@@ -182,14 +179,18 @@ def main():
         all_preds = []
         all_targets = []
         all_probs = []
+        grad_norm_sum, delta_sum, n_batches = 0.0, 0.0, 0
 
-        progress_bar = tqdm(dataloader, desc=f"Testing eps_L2={eps_l2}")
+        progress_bar = tqdm(dataloader, desc=f"Testing eps_Linf={eps}")
         for b_r1, b_r2, b_r3, b_r4, b_y in progress_bar:
             b_r1, b_r2, b_r3, b_r4, b_y = b_r1.to(device), b_r2.to(device), b_r3.to(device), b_r4.to(device), b_y.to(device)
 
-            if eps_l2 > 0:
+            if eps > 0:
                 real_inputs = prepare_data_for_torchattacks(b_r1, b_r2, b_r3, b_r4)
-                adv_real_tensor = fgsm_attack(wrapper_model, real_inputs, b_y, eps_l2 / 2.0)
+                adv_real_tensor, grad = fgsm_attack(wrapper_model, real_inputs, b_y, eps / 2.0)
+                grad_norm_sum += float(grad.norm())
+                delta_sum += float((adv_real_tensor - real_inputs).norm())
+                n_batches += 1
 
                 reals = adv_real_tensor[:, :, :, 0] * 2.0 - 1.0
                 imags = adv_real_tensor[:, :, :, 1] * 2.0 - 1.0
@@ -230,7 +231,11 @@ def main():
         except ValueError:
             roc_auc = 0.0
 
-        print(f"\nResults for FGSM (L2 eps={eps_l2}):")
+        if n_batches:
+            print(f"\n  mean input-gradient norm: {grad_norm_sum / n_batches:.6f}   (> 0 = real gradient)")
+            print(f"  mean ||x_adv - x||_2:     {delta_sum / n_batches:.6f}   (> 0 = the attack lands)")
+
+        print(f"\nResults for FGSM (fair L-inf eps={eps}):")
         print(f"Accuracy:  {test_accuracy:.2f}%")
         print(f"Precision: {precision:.4f}")
         print(f"Recall:    {recall:.4f}")
