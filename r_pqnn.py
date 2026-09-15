@@ -14,8 +14,13 @@ from imblearn.metrics import geometric_mean_score
 from dataset import mapping_classes
 
 n_qubits = 5
-ATTACK_BOUND = 0.05        # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
-NOISE_PROBABILITY = 0.01   # Quantum depolarizing noise 
+
+SCENARIO = "S1"            # S1, S3, S11, S12
+ATTACK_BOUND = 0.1        # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
+NOISE_PROBABILITY = 0.0
+
+DATASET = Path(f"dataset3/scenarios_complex/data{SCENARIO[1:]} Sampled Scenarios_scaled_complex.npz")
+MODEL_OUT = Path(f"MODELS_R-QUPID/r_qupid_{SCENARIO}_L{str(ATTACK_BOUND).replace('0.', '0')}.pth")
 dev = qml.device("default.mixed" if NOISE_PROBABILITY > 0 else "default.qubit", wires=n_qubits)
 
 def init_angles(tensor):
@@ -137,7 +142,10 @@ class QUPIDModel(nn.Module):
         return final_prediction
 
 def main():
-    complex_dataset = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+    complex_dataset = DATASET
+    if MODEL_OUT.exists():
+        raise FileExistsError(f"{MODEL_OUT} already exists: delete or rename it before retraining.")
+    print(f"Scenario {SCENARIO} | L_cons={ATTACK_BOUND} | p={NOISE_PROBABILITY} -> {MODEL_OUT}")
 
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_train_r1 = torch.tensor(data['x_train_r1'], dtype=torch.complex64)
@@ -283,7 +291,7 @@ def main():
 
             if epoch == 0 or avg_loss < best_loss:
                 best_loss = avg_loss
-                torch.save(model.state_dict(), "r_qupid_model.pth")
+                torch.save(model.state_dict(), MODEL_OUT)
                 print(f"New best model saved with avg loss {best_loss:.4f} and accuracy {epoch_accuracy:.2f}%\n")
 
 if __name__ == "__main__":

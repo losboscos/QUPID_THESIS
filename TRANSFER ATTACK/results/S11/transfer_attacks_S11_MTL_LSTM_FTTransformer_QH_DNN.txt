@@ -1,0 +1,99 @@
+Using device: CUDA | scenario S11 | surrogate BASELINES\MTL_LSTM\MTL_LSTM_S11.pth
+Loading MTL-LSTM model from BASELINES\MTL_LSTM\MTL_LSTM_S11.pth...
+  [surrogate white-box] clean test subset: acc=91.60%  MCC=0.8755
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.0
+============================================================
+  [surrogate white-box] FGSM eps=0.0: acc=91.60%  MCC=0.8755
+  [surrogate white-box] PGD  eps=0.0: acc=91.60%  MCC=0.8755
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_MTL_LSTM_S11.npz
+Keys: y, x, fgsm_000, pgd_000
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.05
+============================================================
+  [surrogate white-box] FGSM eps=0.05: acc=29.00%  MCC=-0.0231
+  [surrogate white-box] PGD  eps=0.05: acc=5.00%  MCC=-0.2411
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_MTL_LSTM_S11.npz
+Keys: y, x, fgsm_000, pgd_000, fgsm_005, pgd_005
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.1
+============================================================
+  [surrogate white-box] FGSM eps=0.1: acc=26.40%  MCC=-0.0218
+  [surrogate white-box] PGD  eps=0.1: acc=3.00%  MCC=-0.2595
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_MTL_LSTM_S11.npz
+Keys: y, x, fgsm_000, pgd_000, fgsm_005, pgd_005, fgsm_010, pgd_010
+Using device: CUDA | scenario S11 | surrogate BASELINES\FTTransformer\FTTransformer_S11.pth
+Loading FTTransformer model...
+  [surrogate white-box] clean test subset: acc=91.60%  MCC=0.8753
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.0
+============================================================
+  [surrogate white-box] FGSM eps=0.0: acc=91.60%  MCC=0.8753
+  [surrogate white-box] PGD  eps=0.0: acc=91.60%  MCC=0.8753
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_FTTransformer_S11.npz
+Keys: y, x, fgsm_000, pgd_000
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.05
+============================================================
+  [surrogate white-box] FGSM eps=0.05: acc=30.60%  MCC=-0.0167
+  [surrogate white-box] PGD  eps=0.05: acc=5.00%  MCC=-0.2753
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_FTTransformer_S11.npz
+Keys: y, x, fgsm_000, pgd_000, fgsm_005, pgd_005
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.1
+============================================================
+  [surrogate white-box] FGSM eps=0.1: acc=28.40%  MCC=-0.0368
+  [surrogate white-box] PGD  eps=0.1: acc=1.00%  MCC=-0.3154
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_FTTransformer_S11.npz
+Keys: y, x, fgsm_000, pgd_000, fgsm_005, pgd_005, fgsm_010, pgd_010
+Using device: CUDA | scenario S11 | surrogate BASELINES\QH_DNN\QH_DNN_S11.pth
+Loading QH-DNN model from BASELINES\QH_DNN\QH_DNN_S11.pth...
+  [surrogate white-box] clean test subset: acc=70.20%  MCC=0.5977
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.0
+============================================================
+  [surrogate white-box] FGSM eps=0.0: acc=70.00%  MCC=0.5964
+  [surrogate white-box] PGD  eps=0.0: acc=70.00%  MCC=0.5964
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_QH_DNN_S11.npz
+Keys: y, x, fgsm_000, pgd_000
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.05
+============================================================
+  [surrogate white-box] FGSM eps=0.05: acc=26.80%  MCC=-0.0526
+  [surrogate white-box] PGD  eps=0.05: acc=1.00%  MCC=-0.2374
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_QH_DNN_S11.npz
+Keys: y, x, fgsm_000, pgd_000, fgsm_005, pgd_005
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.1
+============================================================
+  [surrogate white-box] FGSM eps=0.1: acc=29.60%  MCC=0.0011
+  [surrogate white-box] PGD  eps=0.1: acc=3.00%  MCC=-0.2137
+  max |adv-clean| FGSM: 8.5381 | PGD: 8.5381
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_QH_DNN_S11.npz
+Keys: y, x, fgsm_000, pgd_000, fgsm_005, pgd_005, fgsm_010, pgd_010

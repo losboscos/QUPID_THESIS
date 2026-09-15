@@ -14,7 +14,7 @@ from imblearn.metrics import geometric_mean_score
 # Local (parameter-shift) r_pqnn.py -> the qnode uses the real quantum-native differentiation.
 from r_pqnn import QUPIDModel, compute_minimum_dot_product, compute_local_dp_parameters, add_gaussian_noise
 
-MODEL_PATH = Path("MODELS_R-QUPID/r_qupid_model_L005.pth")
+MODEL_PATH = Path("MODELS_R-QUPID/r_qupid_S3_L005.pth")
 ATTACK_BOUND = 0.05
 NOISE_PROBABILITY = 0.0
 EPS_T, DEL_T = 20.0, 1e-5

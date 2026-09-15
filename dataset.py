@@ -5,7 +5,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 import os
 
-dataset = Path("dataset2/multiclass")
+dataset = Path("dataset3/multiclass")
+
+# data1 is the reference scenario the whole work is built on: its .npz must not be regenerated
+# (a new run would rebuild the split and invalidate every trained model). Empty this set only for
+# a deliberate full regeneration from scratch.
+PROTECTED = {"data1"}
 
 def mapping_classes(old_marker):
     """Canonical 6-class label mapping, single source of truth for the whole repo.
@@ -28,6 +33,10 @@ def mapping_classes(old_marker):
 def main():
     dataframe = []
     for file in dataset.glob("*.csv"):
+        if any(file.name.startswith(p + " ") for p in PROTECTED):
+            print(f"Skipping {file.name} (protected reference scenario)")
+            continue
+
         df = pd.read_csv(file)
         dataframe.append(df)
 
@@ -61,7 +70,7 @@ def main():
         print("Scaling completed successfully")
 
         # Saving data locally
-        output = Path("dataset2/scenarios")
+        output = Path("dataset3/scenarios")
 
         # Creating folder if not exists
         os.makedirs(output, exist_ok=True)

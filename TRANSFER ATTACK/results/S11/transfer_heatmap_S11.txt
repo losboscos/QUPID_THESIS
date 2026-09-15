@@ -1,0 +1,77 @@
+Using device: CUDA | scenario S11 | sources=['FTTransformer', 'MTL_LSTM', 'QH_DNN'] | targets=['FTTransformer', 'MTL_LSTM', 'QH_DNN', 'QUPID', 'R-QUPID']
+
+clean reference (no attack):
+  FTTransformer  acc= 91.60%  MCC=+0.8753
+  MTL_LSTM       acc= 91.60%  MCC=+0.8755
+  QH_DNN         acc= 70.20%  MCC=+0.5977
+  QUPID          acc= 93.60%  MCC=+0.9050
+  R-QUPID        acc= 82.00%  MCC=+0.7293
+
+============================================================
+VARIANT: fgsm_005
+============================================================
+  FTTransformer  -> FTTransformer  acc= 30.60%  MCC=-0.0167 (white-box)
+  FTTransformer  -> MTL_LSTM       acc= 32.00%  MCC=+0.0364
+  FTTransformer  -> QH_DNN         acc= 34.20%  MCC=+0.0688
+  FTTransformer  -> QUPID          acc= 31.80%  MCC=-0.0084
+  FTTransformer  -> R-QUPID        acc= 31.60%  MCC=-0.0294
+  MTL_LSTM       -> FTTransformer  acc= 34.60%  MCC=+0.0500
+  MTL_LSTM       -> MTL_LSTM       acc= 29.00%  MCC=-0.0231 (white-box)
+  MTL_LSTM       -> QH_DNN         acc= 31.20%  MCC=+0.0411
+  MTL_LSTM       -> QUPID          acc= 35.40%  MCC=+0.0554
+  MTL_LSTM       -> R-QUPID        acc= 34.40%  MCC=+0.0435
+  QH_DNN         -> FTTransformer  acc= 31.20%  MCC=-0.0013
+  QH_DNN         -> MTL_LSTM       acc= 27.60%  MCC=-0.0214
+  QH_DNN         -> QH_DNN         acc= 26.80%  MCC=-0.0526 (white-box)
+  QH_DNN         -> QUPID          acc= 36.60%  MCC=+0.0684
+  QH_DNN         -> R-QUPID        acc= 32.80%  MCC=-0.0056
+
+  ACCURACY matrix (rows=source, cols=target):
+             FTTransfor    MTL_LSTM      QH_DNN       QUPID     R-QUPID
+  FTTransformer      30.60%      32.00%      34.20%      31.80%      31.60%
+  MTL_LSTM        34.60%      29.00%      31.20%      35.40%      34.40%
+  QH_DNN          31.20%      27.60%      26.80%      36.60%      32.80%
+
+  MCC matrix:
+             FTTransfor    MTL_LSTM      QH_DNN       QUPID     R-QUPID
+  FTTransformer     -0.0167     +0.0364     +0.0688     -0.0084     -0.0294
+  MTL_LSTM       +0.0500     -0.0231     +0.0411     +0.0554     +0.0435
+  QH_DNN         -0.0013     -0.0214     -0.0526     +0.0684     -0.0056
+  figure -> TRANSFER ATTACK\results\heatmap_fgsm_005_acc_S11.png   (* = white-box, source==target)
+  figure -> TRANSFER ATTACK\results\heatmap_fgsm_005_mcc_S11.png   (* = white-box, source==target)
+
+============================================================
+VARIANT: pgd_005
+============================================================
+  FTTransformer  -> FTTransformer  acc=  5.00%  MCC=-0.2753 (white-box)
+  FTTransformer  -> MTL_LSTM       acc= 27.40%  MCC=-0.0306
+  FTTransformer  -> QH_DNN         acc= 26.60%  MCC=-0.0102
+  FTTransformer  -> QUPID          acc= 27.60%  MCC=-0.0392
+  FTTransformer  -> R-QUPID        acc= 32.80%  MCC=-0.0009
+  MTL_LSTM       -> FTTransformer  acc= 33.60%  MCC=+0.0091
+  MTL_LSTM       -> MTL_LSTM       acc=  5.00%  MCC=-0.2411 (white-box)
+  MTL_LSTM       -> QH_DNN         acc= 26.80%  MCC=-0.0428
+  MTL_LSTM       -> QUPID          acc= 31.00%  MCC=-0.0186
+  MTL_LSTM       -> R-QUPID        acc= 32.60%  MCC=-0.0151
+  QH_DNN         -> FTTransformer  acc= 55.60%  MCC=+0.3331
+  QH_DNN         -> MTL_LSTM       acc= 29.40%  MCC=+0.0305
+  QH_DNN         -> QH_DNN         acc=  1.00%  MCC=-0.2374 (white-box)
+  QH_DNN         -> QUPID          acc= 40.20%  MCC=+0.1286
+  QH_DNN         -> R-QUPID        acc= 47.40%  MCC=+0.2016
+
+  ACCURACY matrix (rows=source, cols=target):
+             FTTransfor    MTL_LSTM      QH_DNN       QUPID     R-QUPID
+  FTTransformer       5.00%      27.40%      26.60%      27.60%      32.80%
+  MTL_LSTM        33.60%       5.00%      26.80%      31.00%      32.60%
+  QH_DNN          55.60%      29.40%       1.00%      40.20%      47.40%
+
+  MCC matrix:
+             FTTransfor    MTL_LSTM      QH_DNN       QUPID     R-QUPID
+  FTTransformer     -0.2753     -0.0306     -0.0102     -0.0392     -0.0009
+  MTL_LSTM       +0.0091     -0.2411     -0.0428     -0.0186     -0.0151
+  QH_DNN         +0.3331     +0.0305     -0.2374     +0.1286     +0.2016
+  figure -> TRANSFER ATTACK\results\heatmap_pgd_005_acc_S11.png   (* = white-box, source==target)
+  figure -> TRANSFER ATTACK\results\heatmap_pgd_005_mcc_S11.png   (* = white-box, source==target)
+
+Done. The R-QUPID column vs its clean reference is the refutation;
+classical off-diagonals show transfer works among classical models (sanity).

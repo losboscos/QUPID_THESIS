@@ -17,6 +17,10 @@ from dataset import mapping_classes
 n_qubits = 5
 dev = qml.device("default.qubit", wires=n_qubits)
 
+SCENARIO = "S1"            # S1, S3, S11, S12
+DATASET = Path(f"dataset3/scenarios_complex/data{SCENARIO[1:]} Sampled Scenarios_scaled_complex.npz")
+MODEL_OUT = Path(f"MODELS_QUPID/qupid_model_{SCENARIO}.pth")
+
 def init_angles(tensor):
     return torch.nn.init.uniform_(tensor, a=-math.pi, b=math.pi)
 
@@ -100,8 +104,11 @@ class QUPIDModel(nn.Module):
         return final_prediction
 
 def main():
-    complex_dataset = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
-    
+    complex_dataset = DATASET
+    if MODEL_OUT.exists():
+        raise FileExistsError(f"{MODEL_OUT} already exists: delete or rename it before retraining.")
+    print(f"Scenario {SCENARIO} -> {MODEL_OUT}")
+
     with np.load(complex_dataset, allow_pickle=True) as data:
         X_train_r1 = torch.tensor(data['x_train_r1'], dtype=torch.complex64)
         X_train_r2 = torch.tensor(data['x_train_r2'], dtype=torch.complex64)
@@ -244,7 +251,7 @@ def main():
 
             if epoch == 0 or avg_loss < best_loss:
                 best_loss = avg_loss
-                torch.save(model.state_dict(), f"qupid_model.pth")
+                torch.save(model.state_dict(), MODEL_OUT)
                 print(f"New best model saved with avg loss {best_loss:.4f} and accuracy {epoch_accuracy:.2f}%\n")
 
             #scheduler.step(avg_loss)

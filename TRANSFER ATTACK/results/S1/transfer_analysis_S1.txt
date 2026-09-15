@@ -1,0 +1,67 @@
+Device CUDA | target R-QUPID r_qupid_S1_L005.pth | scenario S1
+500 samples, 120 features
+
+PERTURBATION ON BOTH SIDES OF THE ENCODER (mean per sample)
+variant                 attacker Linf  attacker L2  phasor Linf   phasor L2
+---------------------------------------------------------------------------
+random 0.05                    0.0500       0.5133       0.3105      1.1800
+FTTransformer fgsm_005         0.0500       0.5121       0.3105      1.1818
+FTTransformer pgd_005          0.0500       0.4321       0.3105      0.9984
+MTL_LSTM fgsm_005              0.0500       0.5160       0.3093      1.1857
+MTL_LSTM pgd_005               0.0500       0.4035       0.3081      0.8967
+QH_DNN fgsm_005                0.0500       0.5128       0.3105      1.1800
+QH_DNN pgd_005                 0.0500       0.3629       0.3073      0.8223
+
+clean-smoothed: 82.40%  MCC +0.6951
+random +-0.05:   64.80%  MCC +0.3721
+  FTTransformer  fgsm_005     47.40%  MCC +0.0902
+  MTL_LSTM       fgsm_005     44.40%  MCC +0.0126
+  QH_DNN         fgsm_005     41.60%  MCC +0.0336
+  FTTransformer  pgd_005      47.40%  MCC +0.1106
+  MTL_LSTM       pgd_005      42.20%  MCC +0.0017
+  QH_DNN         pgd_005      55.40%  MCC +0.2067
+
+==============================================================================
+variant               FTTransformer             MTL_LSTM               QH_DNN
+------------------------------------------------------------------------------
+clean               82.40% / +0.695      82.40% / +0.695      82.40% / +0.695
+random 0.05         64.80% / +0.372      64.80% / +0.372      64.80% / +0.372
+fgsm_005            47.40% / +0.090      44.40% / +0.013      41.60% / +0.034
+pgd_005             47.40% / +0.111      42.20% / +0.002      55.40% / +0.207
+==============================================================================
+A variant that beats 'random' of the same budget is transferring; one that matches it
+is only measuring how fragile the target is to any perturbation of that size.
+
+PER-CLASS under transfer (FTTransformer fgsm_005), rows = real, cols = predicted
+               0      1      2      3      4      5    recall
+  real 0       12      0      1      1      0      7     0.571
+  real 1        0      6      3      3      2     50     0.094
+  real 2        0      3      6      5      0     10     0.250
+  real 3        4     10      2      5      4     30     0.091
+  real 4        3      3      1      2      3     25     0.081
+  real 5       11     29      7     25     22    205     0.686
+
+FRAGILITY ACROSS TARGETS - MCC  (transfer = mean over surrogates, FGSM and PGD)
+target                       clean   random 0.05 transfer 0.05
+------------------------------------------------------------------------------------------
+FTTransformer               +0.920        +0.233        +0.076
+MTL_LSTM                    +0.801        +0.451        +0.078
+QH_DNN                      +0.562        +0.276        +0.040
+QUPID (no defense)          +0.923        +0.183        +0.052
+R-QUPID                     +0.695        +0.372        +0.076
+
+FRAGILITY ACROSS TARGETS - accuracy %  (transfer = mean over surrogates, FGSM and PGD)
+target                       clean   random 0.05 transfer 0.05
+------------------------------------------------------------------------------------------
+FTTransformer                95.20         52.00         40.75
+MTL_LSTM                     88.20         67.20         39.85
+QH_DNN                       75.40         56.80         42.30
+QUPID (no defense)           95.40         49.60         38.70
+R-QUPID                      82.40         64.80         46.40
+
+MCC lost at eps 0.05:   to random noise   |  further, to the transferred direction
+  FTTransformer               +0.687      |          +0.157
+  MTL_LSTM                    +0.350      |          +0.374
+  QH_DNN                      +0.286      |          +0.236
+  QUPID (no defense)          +0.741      |          +0.130
+  R-QUPID                     +0.323      |          +0.296

@@ -1,0 +1,37 @@
+TRANSFER ATTACKS (from transfer_analysis_<S>.txt)
+500 test samples, eps = 0.05. Surrogates: FTTransformer, MTL_LSTM, QH_DNN.
+transfer: mean over surrogates, FGSM and PGD (white-box excluded). random: +-eps on every feature.
+R-QUPID: model L005, majority vote over 100 draws.
+Cell: accuracy % / MCC
+
+S1  (QUPID "qupid_model_S1 (94.66% acc).pth", R-QUPID r_qupid_S1_L005.pth)
+target                      clean              random 0.05        transfer 0.05
+FTTransformer               95.20 / +0.920     52.00 / +0.233     40.75 / +0.076
+MTL_LSTM                    88.20 / +0.801     67.20 / +0.451     39.85 / +0.078
+QH_DNN                      75.40 / +0.562     56.80 / +0.276     42.30 / +0.040
+QUPID (no defense)          95.40 / +0.923     49.60 / +0.183     38.70 / +0.052
+R-QUPID                     82.40 / +0.695     64.80 / +0.372     46.40 / +0.076
+
+S3  (QUPID qupid_model_S3.pth, R-QUPID r_qupid_S3_L005.pth)
+target                      clean              random 0.05        transfer 0.05
+FTTransformer               90.80 / +0.861     44.40 / +0.151     32.85 / +0.022
+MTL_LSTM                    81.00 / +0.713     61.60 / +0.416     33.30 / +0.017
+QH_DNN                      65.00 / +0.495     43.00 / +0.176     28.00 / +0.001
+QUPID (no defense)          90.00 / +0.851     40.40 / +0.149     32.73 / +0.040
+R-QUPID                     77.00 / +0.638     57.80 / +0.299     41.13 / +0.039
+
+S11  (QUPID qupid_model_S11.pth, R-QUPID r_qupid_S11_L005.pth)
+target                      clean              random 0.05        transfer 0.05
+FTTransformer               91.60 / +0.875     54.60 / +0.327     38.75 / +0.098
+MTL_LSTM                    91.60 / +0.875     63.00 / +0.477     29.10 / +0.004
+QH_DNN                      70.20 / +0.598     48.60 / +0.290     29.70 / +0.014
+QUPID (no defense)          93.60 / +0.905     38.80 / +0.105     33.77 / +0.031
+R-QUPID                     82.00 / +0.729     57.20 / +0.347     35.03 / +0.029
+
+S12  (QUPID qupid_model_S12.pth, R-QUPID r_qupid_S12_L005.pth)
+target                      clean              random 0.05        transfer 0.05
+FTTransformer               87.20 / +0.826     37.20 / +0.144     30.25 / +0.055
+MTL_LSTM                    87.60 / +0.830     62.60 / +0.482     30.95 / +0.030
+QH_DNN                      44.60 / +0.287     37.00 / +0.174     23.35 / +0.020
+QUPID (no defense)          90.40 / +0.870     34.60 / +0.142     27.63 / +0.027
+R-QUPID                     67.60 / +0.544     49.20 / +0.268     34.97 / +0.073

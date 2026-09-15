@@ -9,26 +9,30 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from sklearn.metrics import matthews_corrcoef
 from rtdl import FTTransformer
-from BASELINES.MTL_LSTM import MTLLSTM
-from BASELINES.QH_DNN import QHDNNModel
-# R-QUPID (backprop forward = batchable) + its own encoder + DP helpers.
+from BASELINES.MTL_LSTM.MTL_LSTM import MTLLSTM
+from BASELINES.QH_DNN.QH_DNN import QHDNNModel
 from r_pqnn import QUPIDModel, compute_minimum_dot_product, compute_local_dp_parameters, add_gaussian_noise
 from to_complex import complex_partition
 
 SOURCES = ["FTTransformer", "MTL_LSTM", "QH_DNN"]
 TARGETS = ["FTTransformer", "MTL_LSTM", "QH_DNN", "QUPID", "R-QUPID"]
 VARIANTS = ["fgsm_005", "pgd_005"]  # add "fgsm_010","pgd_010" for the eps=0.1 pair
-ADV_DIR = Path("TRANSFER ATTACK")
 NUM_FEATURES, NUM_CLASSES = 120, 6
 
+SCENARIO = "S12"  # S1, S3, S11, S12
+ADV_DIR = Path(f"TRANSFER ATTACK/{SCENARIO}")
+RESULTS = Path(f"TRANSFER ATTACK/results/{SCENARIO}")
+TAG = "" if SCENARIO == "S1" else f"_{SCENARIO}"  # S1 files have no suffix
+
 CKPT = {
-    "FTTransformer": Path("BASELINES/FTTransformer.pth"),
-    "MTL_LSTM": Path("BASELINES/MTL_LSTM.pth"),
-    "QH_DNN": Path("BASELINES/QH_DNN.pth"),
-    "QUPID": Path("MODELS_QUPID/qupid_model_S1 (94.66% acc).pth"),
-    "R-QUPID": Path("MODELS_R-QUPID/r_qupid_model_L005.pth"),
+    "FTTransformer": Path(f"BASELINES/FTTransformer/FTTransformer_{SCENARIO}.pth"),
+    "MTL_LSTM": Path(f"BASELINES/MTL_LSTM/MTL_LSTM_{SCENARIO}.pth"),
+    "QH_DNN": Path(f"BASELINES/QH_DNN/QH_DNN_{SCENARIO}.pth"),
+    "QUPID": Path("MODELS_QUPID/qupid_model_S1 (94.66% acc).pth" if SCENARIO == "S1"
+                  else f"MODELS_QUPID/qupid_model_{SCENARIO}.pth"),
+    "R-QUPID": Path(f"MODELS_R-QUPID/r_qupid_{SCENARIO}_L005.pth"),
 }
-CLEAN_COMPLEX = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
+CLEAN_COMPLEX = Path(f"dataset3/scenarios_complex/data{SCENARIO[1:]} Sampled Scenarios_scaled_complex.npz")
 ATTACK_BOUND, NOISE_PROBABILITY, EPS_T, DEL_T = 0.05, 0.0, 20.0, 1e-5
 N_SMOOTH, SMOOTH_BATCH = 100, 128
 
@@ -150,15 +154,16 @@ def heatmap(matrix, variant, kind, fname):
     print(f"  figure -> {fname}   (* = white-box, source==target)")
 
 def main():
+    RESULTS.mkdir(parents=True, exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device.type.upper()} | sources={SOURCES} | targets={TARGETS}")
+    print(f"Using device: {device.type.upper()} | scenario {SCENARIO} | sources={SOURCES} | targets={TARGETS}")
 
     classical = {t: load_classical(t, device) for t in TARGETS if t not in ("R-QUPID", "QUPID")}
     qupid = build_qupid(device)
     smoothed = build_rqupid(device)
 
     # source npz files (same y/features across all -> read once)
-    srcs = {s: np.load(ADV_DIR / f"transfer_adv_{s}.npz", allow_pickle=True) for s in SOURCES}
+    srcs = {s: np.load(ADV_DIR / f"transfer_adv_{s}{TAG}.npz", allow_pickle=True) for s in SOURCES}
     features = srcs[SOURCES[0]]["features"].tolist()
     y = srcs[SOURCES[0]]["y"]
 
@@ -199,11 +204,8 @@ def main():
         for i, s in enumerate(SOURCES):
             print(f"  {s:<10}" + "".join(f"{mcc_m[i, j]:>+12.4f}" for j in range(len(TARGETS))))
 
-        heatmap(acc_m, variant, "accuracy", ADV_DIR / f"heatmap_{variant}_acc.png")
-        heatmap(mcc_m, variant, "MCC", ADV_DIR / f"heatmap_{variant}_mcc.png")
-
-    print("\nDone. The R-QUPID column vs its clean reference is the refutation;")
-    print("classical off-diagonals show transfer works among classical models (sanity).")
+        heatmap(acc_m, f"{SCENARIO} {variant}", "accuracy", RESULTS / f"heatmap_{variant}_acc_{SCENARIO}.png")
+        heatmap(mcc_m, f"{SCENARIO} {variant}", "MCC", RESULTS / f"heatmap_{variant}_mcc_{SCENARIO}.png")
 
 if __name__ == "__main__":
     main()

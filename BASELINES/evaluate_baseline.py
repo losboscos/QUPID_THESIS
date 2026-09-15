@@ -11,8 +11,8 @@ import torch.nn.functional as F
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
 from imblearn.metrics import geometric_mean_score
 from rtdl import FTTransformer
-from MTL_LSTM import MTLLSTM
-from QH_DNN import QHDNNModel
+from BASELINES.MTL_LSTM.MTL_LSTM import MTLLSTM
+from BASELINES.QH_DNN.QH_DNN import QHDNNModel
 
 # mapping_classes is imported from dataset (single source of truth)
 
@@ -87,10 +87,10 @@ def evaluate_model(dataset, model_name):
 
 def main():
     # STANDARDIZE = True for z-scored models (r_FTTransformer_s*.pth, trained on z-scored features);
-    # False for the [0,1]-MinMax clean baselines (FTTransformer.pth / MTL_LSTM.pth / QH_DNN.pth).
-    STANDARDIZE = True
+    # False for the [0,1]-MinMax clean baselines (FTTransformer_S1.pth / MTL_LSTM_S1.pth / ...).
+    STANDARDIZE = False
     dataset = Path("dataset3/scenarios/data1 Sampled Scenarios_scaled.npz")
-    model_name = "FTTransformer/r_FTTransformer_s0.4472 (0.2).pth"
+    model_name = "BASELINES/QH_DNN/QH_DNN_S1.pth"
 
     with np.load(dataset, allow_pickle=True) as data:
         X_train = data['x_train'].astype(np.float32)

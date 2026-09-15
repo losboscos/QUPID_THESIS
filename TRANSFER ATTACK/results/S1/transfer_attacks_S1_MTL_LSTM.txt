@@ -1,0 +1,38 @@
+Only MTL_LSTM regenerated. FTTransformer and QH_DNN files from a previous run, white-box results at eps 0.05
+(from transfer_heatmap_S1.txt):
+  FTTransformer  clean 95.20% (MCC +0.920) | FGSM 35.60% (MCC -0.006) | PGD 11.00% (MCC -0.218)
+  QH_DNN         clean 75.40% (MCC +0.562) | FGSM 35.60% (MCC +0.016) | PGD  2.00% (MCC -0.297)
+
+Using device: CUDA
+Loading MTL-LSTM model from BASELINES\MTL_LSTM\MTL_LSTM_S1.pth...
+  [surrogate white-box] clean test subset: acc=88.20%  MCC=0.8011
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.0
+============================================================
+  [surrogate white-box] FGSM eps=0.0: acc=88.20%  MCC=0.8011
+  [surrogate white-box] PGD  eps=0.0: acc=88.20%  MCC=0.8011
+  max |adv-clean| FGSM: 0.0488 | PGD: 0.0488
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_MTL_LSTM.npz
+Keys: y, x, fgsm_000, pgd_000
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.05
+============================================================
+  [surrogate white-box] FGSM eps=0.05: acc=40.60%  MCC=0.0089
+  [surrogate white-box] PGD  eps=0.05: acc=9.80%  MCC=-0.2427
+  max |adv-clean| FGSM: 0.0500 | PGD: 0.0500
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_MTL_LSTM.npz
+Keys: y, x, fgsm_000, pgd_000, fgsm_005, pgd_005
+
+============================================================
+EVALUATING ATTACKS | TARGET BOUND = 0.1
+============================================================
+  [surrogate white-box] FGSM eps=0.1: acc=39.20%  MCC=-0.0166
+  [surrogate white-box] PGD  eps=0.1: acc=8.20%  MCC=-0.2659
+  max |adv-clean| FGSM: 0.1000 | PGD: 0.1000
+
+Saved adversarial set -> TRANSFER ATTACK\transfer_adv_MTL_LSTM.npz
+Keys: y, x, fgsm_000, pgd_000, fgsm_005, pgd_005, fgsm_010, pgd_010

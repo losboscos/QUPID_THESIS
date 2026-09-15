@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="760" viewBox="0 0 920 760" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif">
+
+  <rect x="0" y="0" width="920" height="760" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="40" y="50" font-size="26" font-weight="600" fill="#1a1a1a" letter-spacing="-0.3">Results</text>
+  <rect x="40" y="62" width="52" height="3" fill="#2c3e50"/>
+
+  <!-- TABLE 1 -->
+  <text x="40" y="106" font-size="14.5" font-weight="600" fill="#2c3e50">Clean data</text>
+  <text x="880" y="106" font-size="12" fill="#546e7a" text-anchor="end">accuracy / MCC</text>
+
+  <g transform="translate(0,120)">
+    <!-- header -->
+    <rect x="40" y="0" width="840" height="32" fill="#eceff1"/>
+    <text x="52"  y="21" font-size="13" font-weight="600" fill="#37474f">Model</text>
+    <text x="490" y="21" font-size="13" font-weight="600" fill="#37474f" text-anchor="end">S1</text>
+    <text x="620" y="21" font-size="13" font-weight="600" fill="#37474f" text-anchor="end">S3</text>
+    <text x="750" y="21" font-size="13" font-weight="600" fill="#37474f" text-anchor="end">S11</text>
+    <text x="868" y="21" font-size="13" font-weight="600" fill="#37474f" text-anchor="end">S12</text>
+
+    <!-- zebra -->
+    <rect x="40" y="64"  width="840" height="32" fill="#f7f9fa"/>
+    <rect x="40" y="128" width="840" height="32" fill="#f7f9fa"/>
+
+    <!-- rows -->
+    <text x="52"  y="53" font-size="13" font-style="italic" fill="#546e7a">majority class</text>
+    <text x="490" y="53" font-size="13" font-style="italic" fill="#546e7a" text-anchor="end">59.88%</text>
+    <text x="620" y="53" font-size="13" font-style="italic" fill="#546e7a" text-anchor="end">53.49%</text>
+    <text x="750" y="53" font-size="13" font-style="italic" fill="#546e7a" text-anchor="end">50.90%</text>
+    <text x="868" y="53" font-size="13" font-style="italic" fill="#546e7a" text-anchor="end">41.62%</text>
+
+    <text x="52"  y="85" font-size="13" fill="#1a1a1a">FTTransformer</text>
+    <text x="490" y="85" font-size="13" fill="#1a1a1a" text-anchor="end">94.73% / 0.913</text>
+    <text x="620" y="85" font-size="13" fill="#1a1a1a" text-anchor="end">91.15% / 0.866</text>
+    <text x="750" y="85" font-size="13" fill="#1a1a1a" text-anchor="end">91.70% / 0.877</text>
+    <text x="868" y="85" font-size="13" fill="#1a1a1a" text-anchor="end">89.32% / 0.855</text>
+
+    <text x="52"  y="117" font-size="13" fill="#1a1a1a">MTL-LSTM</text>
+    <text x="490" y="117" font-size="13" fill="#1a1a1a" text-anchor="end">89.39% / 0.822</text>
+    <text x="620" y="117" font-size="13" fill="#1a1a1a" text-anchor="end">83.78% / 0.755</text>
+    <text x="750" y="117" font-size="13" fill="#1a1a1a" text-anchor="end">90.94% / 0.867</text>
+    <text x="868" y="117" font-size="13" fill="#1a1a1a" text-anchor="end">89.11% / 0.851</text>
+
+    <text x="52"  y="149" font-size="13" fill="#1a1a1a">QH-DNN</text>
+    <text x="490" y="149" font-size="13" fill="#1a1a1a" text-anchor="end">75.69% / 0.568</text>
+    <text x="620" y="149" font-size="13" fill="#1a1a1a" text-anchor="end">65.15% / 0.491</text>
+    <text x="750" y="149" font-size="13" fill="#1a1a1a" text-anchor="end">69.36% / 0.585</text>
+    <text x="868" y="149" font-size="13" fill="#1a1a1a" text-anchor="end">46.30% / 0.302</text>
+
+    <text x="52"  y="181" font-size="13" fill="#1a1a1a">QUPID</text>
+    <text x="490" y="181" font-size="13" fill="#1a1a1a" text-anchor="end">94.59% / 0.909</text>
+    <text x="620" y="181" font-size="13" fill="#1a1a1a" text-anchor="end">90.75% / 0.861</text>
+    <text x="750" y="181" font-size="13" fill="#1a1a1a" text-anchor="end">94.12% / 0.913</text>
+    <text x="868" y="181" font-size="13" fill="#1a1a1a" text-anchor="end">89.94% / 0.863</text>
+
+    <!-- rules -->
+    <line x1="40" y1="0"   x2="880" y2="0"   stroke="#b0bec5" stroke-width="1"/>
+    <line x1="40" y1="32"  x2="880" y2="32"  stroke="#b0bec5" stroke-width="1"/>
+    <line x1="40" y1="64"  x2="880" y2="64"  stroke="#e0e6e9" stroke-width="1"/>
+    <line x1="40" y1="96"  x2="880" y2="96"  stroke="#e0e6e9" stroke-width="1"/>
+    <line x1="40" y1="128" x2="880" y2="128" stroke="#e0e6e9" stroke-width="1"/>
+    <line x1="40" y1="160" x2="880" y2="160" stroke="#b0bec5" stroke-width="1"/>
+    <line x1="40" y1="192" x2="880" y2="192" stroke="#b0bec5" stroke-width="1"/>
+  </g>
+
+  <!-- TABLE 2 -->
+  <text x="40" y="360" font-size="14.5" font-weight="600" fill="#2c3e50">R-QUPID under attack</text>
+  <text x="880" y="360" font-size="12" fill="#546e7a" text-anchor="end">accuracy / MCC</text>
+
+  <g transform="translate(0,374)">
+    <!-- header -->
+    <rect x="40" y="0" width="840" height="32" fill="#eceff1"/>
+    <text x="52"  y="21" font-size="13" font-weight="600" fill="#37474f">Attack</text>
+    <text x="490" y="21" font-size="13" font-weight="600" fill="#37474f" text-anchor="end">S1</text>
+    <text x="620" y="21" font-size="13" font-weight="600" fill="#37474f" text-anchor="end">S3</text>
+    <text x="750" y="21" font-size="13" font-weight="600" fill="#37474f" text-anchor="end">S11</text>
+    <text x="868" y="21" font-size="13" font-weight="600" fill="#37474f" text-anchor="end">S12</text>
+
+    <!-- zebra -->
+    <rect x="40" y="64"  width="840" height="32" fill="#f7f9fa"/>
+    <rect x="40" y="128" width="840" height="32" fill="#f7f9fa"/>
+    <rect x="40" y="192" width="840" height="32" fill="#f7f9fa"/>
+    <rect x="40" y="256" width="840" height="32" fill="#f7f9fa"/>
+
+    <!-- rows: model L 0.05 -->
+    <text x="52"  y="53" font-size="13" fill="#1a1a1a">ineffective attack, as in the paper (L 0.05)</text>
+    <text x="490" y="53" font-size="13" fill="#1a1a1a" text-anchor="end">81.82% / 0.685</text>
+    <text x="620" y="53" font-size="13" fill="#1a1a1a" text-anchor="end">75.67% / 0.614</text>
+    <text x="750" y="53" font-size="13" fill="#1a1a1a" text-anchor="end">80.71% / 0.710</text>
+    <text x="868" y="53" font-size="13" fill="#1a1a1a" text-anchor="end">67.53% / 0.544</text>
+
+    <text x="52"  y="85" font-size="13" fill="#1a1a1a">FGSM ε = 0.05</text>
+    <text x="490" y="85" font-size="13" fill="#1a1a1a" text-anchor="end">36.36% / −0.045</text>
+    <text x="620" y="85" font-size="13" fill="#1a1a1a" text-anchor="end">39.34% / −0.002</text>
+    <text x="750" y="85" font-size="13" fill="#1a1a1a" text-anchor="end">31.88% / −0.003</text>
+    <text x="868" y="85" font-size="13" fill="#1a1a1a" text-anchor="end">27.03% / −0.045</text>
+
+    <text x="52"  y="117" font-size="13" fill="#1a1a1a">PGD-20 ε = 0.05</text>
+    <text x="490" y="117" font-size="13" fill="#1a1a1a" text-anchor="end">12.12% / −0.205</text>
+    <text x="620" y="117" font-size="13" fill="#1a1a1a" text-anchor="end">10.92% / −0.237</text>
+    <text x="750" y="117" font-size="13" fill="#1a1a1a" text-anchor="end">0.55% / −0.298</text>
+    <text x="868" y="117" font-size="13" fill="#1a1a1a" text-anchor="end">5.17% / −0.278</text>
+
+    <!-- rows: model L 0.1 -->
+    <text x="52"  y="149" font-size="13" fill="#1a1a1a">ineffective attack, as in the paper (L 0.1)</text>
+    <text x="490" y="149" font-size="13" fill="#1a1a1a" text-anchor="end">70.13% / 0.437</text>
+    <text x="620" y="149" font-size="13" fill="#1a1a1a" text-anchor="end">64.01% / 0.393</text>
+    <text x="750" y="149" font-size="13" fill="#1a1a1a" text-anchor="end">60.30% / 0.351</text>
+    <text x="868" y="149" font-size="13" fill="#1a1a1a" text-anchor="end">57.33% / 0.388</text>
+
+    <text x="52"  y="181" font-size="13" fill="#1a1a1a">FGSM ε = 0.1</text>
+    <text x="490" y="181" font-size="13" fill="#1a1a1a" text-anchor="end">39.25% / −0.100</text>
+    <text x="620" y="181" font-size="13" fill="#1a1a1a" text-anchor="end">40.88% / −0.006</text>
+    <text x="750" y="181" font-size="13" fill="#1a1a1a" text-anchor="end">40.11% / +0.018</text>
+    <text x="868" y="181" font-size="13" fill="#1a1a1a" text-anchor="end">28.91% / −0.033</text>
+
+    <text x="52"  y="213" font-size="13" fill="#1a1a1a">PGD-20 ε = 0.1</text>
+    <text x="490" y="213" font-size="13" fill="#1a1a1a" text-anchor="end">12.41% / −0.251</text>
+    <text x="620" y="213" font-size="13" fill="#1a1a1a" text-anchor="end">14.61% / −0.245</text>
+    <text x="750" y="213" font-size="13" fill="#1a1a1a" text-anchor="end">10.10% / −0.241</text>
+    <text x="868" y="213" font-size="13" fill="#1a1a1a" text-anchor="end">6.01% / −0.246</text>
+
+    <!-- rows: black-box, model L 0.05 -->
+    <text x="52"  y="245" font-size="13" fill="#1a1a1a">random ±0.05 (L 0.05)</text>
+    <text x="490" y="245" font-size="13" fill="#1a1a1a" text-anchor="end">64.80% / 0.372</text>
+    <text x="620" y="245" font-size="13" fill="#1a1a1a" text-anchor="end">57.80% / 0.299</text>
+    <text x="750" y="245" font-size="13" fill="#1a1a1a" text-anchor="end">57.20% / 0.347</text>
+    <text x="868" y="245" font-size="13" fill="#1a1a1a" text-anchor="end">49.20% / 0.268</text>
+
+    <text x="52"  y="277" font-size="13" fill="#1a1a1a">transfer ε = 0.05 (L 0.05)</text>
+    <text x="490" y="277" font-size="13" fill="#1a1a1a" text-anchor="end">46.40% / 0.076</text>
+    <text x="620" y="277" font-size="13" fill="#1a1a1a" text-anchor="end">41.13% / 0.039</text>
+    <text x="750" y="277" font-size="13" fill="#1a1a1a" text-anchor="end">35.03% / 0.029</text>
+    <text x="868" y="277" font-size="13" fill="#1a1a1a" text-anchor="end">34.97% / 0.073</text>
+
+    <!-- rules -->
+    <line x1="40" y1="0"   x2="880" y2="0"   stroke="#b0bec5" stroke-width="1"/>
+    <line x1="40" y1="32"  x2="880" y2="32"  stroke="#b0bec5" stroke-width="1"/>
+    <line x1="40" y1="64"  x2="880" y2="64"  stroke="#e0e6e9" stroke-width="1"/>
+    <line x1="40" y1="96"  x2="880" y2="96"  stroke="#e0e6e9" stroke-width="1"/>
+    <line x1="40" y1="128" x2="880" y2="128" stroke="#b0bec5" stroke-width="1"/>
+    <line x1="40" y1="160" x2="880" y2="160" stroke="#e0e6e9" stroke-width="1"/>
+    <line x1="40" y1="192" x2="880" y2="192" stroke="#e0e6e9" stroke-width="1"/>
+    <line x1="40" y1="224" x2="880" y2="224" stroke="#b0bec5" stroke-width="1"/>
+    <line x1="40" y1="256" x2="880" y2="256" stroke="#e0e6e9" stroke-width="1"/>
+    <line x1="40" y1="288" x2="880" y2="288" stroke="#b0bec5" stroke-width="1"/>
+  </g>
+
+  <!-- notes -->
+  <text x="40" y="700" font-size="11.5" fill="#546e7a">R-QUPID prediction: majority vote over 100 noisy copies of the input. White-box attacks on the whole test set.</text>
+  <text x="40" y="718" font-size="11.5" fill="#546e7a">Random and transfer: 500 test samples; transfer = mean over the 3 classical surrogates, FGSM and PGD.</text>
+  <text x="40" y="736" font-size="11.5" fill="#546e7a">S1 only: EoT with 30 draws 34.8% / MCC ≈ 0.</text>
+
+</svg>

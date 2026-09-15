@@ -12,7 +12,8 @@ from imblearn.metrics import geometric_mean_score
 from r_pqnn import QUPIDModel, compute_minimum_dot_product, compute_local_dp_parameters, add_gaussian_noise
 from dataset import mapping_classes
 
-ATTACK_BOUND = 0.05  # Bound L2 of construction for DP (L_cons)
+SCENARIO = "S1"      # S1, S3, S11, S12
+ATTACK_BOUND = 0.1  # Bound L2 of construction for DP (L_cons)
 NOISE_PROBABILITY = 0.00   # Quantum noise
 NUM_REAL_DIMENSIONS = 128  # 4 PMUs * 16 feature * 2 (Real, Imag)
 
@@ -113,8 +114,9 @@ class SmoothQUPID:
         return counts
 
 def main():
-    complex_dataset = Path("dataset3/scenarios_complex/data1 Sampled Scenarios_scaled_complex.npz")
-    model_name = Path("MODELS_R-QUPID/r_qupid_model_L005.pth")
+    complex_dataset = Path(f"dataset3/scenarios_complex/data{SCENARIO[1:]} Sampled Scenarios_scaled_complex.npz")
+    model_name = Path(f"MODELS_R-QUPID/r_qupid_{SCENARIO}_L{str(ATTACK_BOUND).replace('0.', '0')}.pth")
+    print(f"Scenario {SCENARIO} | L_cons={ATTACK_BOUND} | {model_name.name}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device.type.upper()}")
 
@@ -164,10 +166,7 @@ def main():
     sigmas_sq = [sigma_val_1**2, sigma_val_2**2, sigma_val_3**2, sigma_val_4**2]
     smoothed_classifier = SmoothQUPID(model, num_classes=6, sigmas_sq=sigmas_sq)
 
-    # eps = 0.0 -> no attack: gives the CLEAN-SMOOTHED accuracy (~81%, i.e. the number the paper reports).
-    # eps > 0  -> the real attack. The eps is halved because the wrapper maps [0,1] -> [-1,1] (x2):
-    # that is the FAIR L-inf budget, the same per-feature magnitude the classical baselines receive.
-    epsilons = [0.0, 0.05, 0.1]
+    epsilons = [0.0, 0.1]
 
     for eps in epsilons:
         print(f"\n" + "="*60)

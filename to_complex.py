@@ -81,8 +81,13 @@ def main():
     dataset_archive = Path("dataset3/scenarios")
     output = Path("dataset3/scenarios_complex")
 
+    protected = {"data1"}
+
     for file in dataset_archive.glob("*.npz"):
-    
+        if any(file.name.startswith(p + " ") for p in protected):
+            print(f"Skipping {file.name} (protected reference scenario)")
+            continue
+
         with np.load(file, allow_pickle=True) as data:
             X_train_scaled = data['x_train']
             X_test_scaled = data['x_test']

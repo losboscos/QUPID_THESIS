@@ -7,8 +7,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from rtdl import FTTransformer
 import torchattacks
-from BASELINES.MTL_LSTM import MTLLSTM
-from BASELINES.QH_DNN import QHDNNModel
+from BASELINES.MTL_LSTM.MTL_LSTM import MTLLSTM
+from BASELINES.QH_DNN.QH_DNN import QHDNNModel
 from tqdm import tqdm
 from collections import Counter
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
@@ -20,10 +20,13 @@ SUBSET_SIZE = 500  # We take only a subset of the test set for generate adversar
 NUM_CLASSES = 6
 EPSILONS = [0.0, 0.05, 0.1] # attack bounds for the FGSM attack
 PGD_STEPS = 20  # Number of steps for the PGD attack
-OUT_PATH = Path("TRANSFER")
+SCENARIO = "S12"  # S1, S3, S11, S12
+SURROGATES = ["MTL_LSTM", "FTTransformer", "QH_DNN"]
+OUT_PATH = Path(f"TRANSFER ATTACK/{SCENARIO}")
+TAG = "" if SCENARIO == "S1" else f"_{SCENARIO}"  # S1 files have no suffix
 
 def evaluate_on_surrogate(model, adv_X, y, device, tag):
-    """White-box sanity check: how effective the perturbation is on the surrogate itself."""
+    """Accuracy of the surrogate on its own adversarial examples (white-box)."""
     with torch.no_grad():
         logits = model(adv_X.to(device))
         preds = logits.argmax(dim=1).cpu().numpy()
@@ -46,14 +49,15 @@ class FTTransformerWrapper(nn.Module):
         return self.ft_model(x, None)
 
 def main():
-    dataset_path = Path("dataset3/scenarios/data1 Sampled Scenarios_scaled.npz")
-    model_name = Path("BASELINES/QH_DNN.pth")
+    for surrogate in SURROGATES:
+        generate(Path(f"BASELINES/{surrogate}/{surrogate}_{SCENARIO}.pth"))
+
+def generate(model_name):
+    dataset_path = Path(f"dataset3/scenarios/data{SCENARIO[1:]} Sampled Scenarios_scaled.npz")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # cuDNN forbids RNN backward in eval() mode; the attack needs input gradients through the
-    # MTL-LSTM, so fall back to the native (non-cuDNN) LSTM, which allows it. No effect on the
-    # other surrogates.
+    # cuDNN does not allow the LSTM backward in eval mode, needed for the MTL-LSTM input gradients
     torch.backends.cudnn.enabled = False
-    print(f"Using device: {device.type.upper()}")
+    print(f"Using device: {device.type.upper()} | scenario {SCENARIO} | surrogate {model_name}")
 
     with np.load(dataset_path, allow_pickle=True) as data:
         X_test = torch.tensor(data['x_test'], dtype=torch.float32)
@@ -137,8 +141,8 @@ def main():
         print(f"  max |adv-clean| FGSM: {(adv_fgsm - X_att).abs().max():.4f} | PGD: {(adv_pgd - X_att).abs().max():.4f}")
 
         # Save the adversarial examples and related data to a compressed .npz file
-        OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        final_path = OUT_PATH / f"transfer_adv_{name}.npz"
+        OUT_PATH.mkdir(parents=True, exist_ok=True)
+        final_path = OUT_PATH / f"transfer_adv_{name}{TAG}.npz"
         np.savez_compressed(final_path, **saved)
         print(f"\nSaved adversarial set -> {final_path}")
         print("Keys:", ", ".join(k for k in saved if k not in ("features",)))
