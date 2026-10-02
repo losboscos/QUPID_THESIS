@@ -13,7 +13,7 @@ from tqdm import tqdm
 import pennylane as qml
 from sklearn.metrics import matthews_corrcoef
 
-# Control experiment: is the training recipe the missing piece? Consistency regularization
+# Control experiment: Consistency regularization
 # (Jeong & Shin 2020) at the sigma where the classical baseline is robust: two independent noisy
 # draws per batch, CE on both plus a KL term pushing them to agree.
 # Regime: z-scored phasors, no magnitude clamp, sigma set directly (not via the DP formula).

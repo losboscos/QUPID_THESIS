@@ -9,13 +9,14 @@
 6. evaluate.py: In this file there is the evaluation of base QUPID.
 7. fgsm.py: In this file there is the evaluation of R-QUPID under FGSM, with an honest attack (real backprop gradient, no masking). eps=0 gives the clean-smoothed ~81% (the value the paper reports), eps>0 the real fair L-inf attack (~35%): the gap between the two rows is the result.
 8. pgd.py: In this file there is the same for PGD. The masked reproduction of the paper's ~81/79 is in /PARAMETER-SHIFT, where the quantum-native gradient is NaN on its own.
-9. eot.py: In this file there is the test with EoT (Expectation over Transformation) for attacks.
 
 /dataset3: this folder contains the data pre-processing.
 /MODELS_QUPID: this folder contains all clean models trained during the work. In "info.txt" all models are explained.
 /MODELS_R-QUPID: this folder contains all robust models trained during the work. In "info.txt" all models are explained.
-/BASELINES: this folder contains the baseline models with training files (FTTransformer.py, MTL_LSTM.py, QH_DNN.py), their FGSM (fgsm_baseline.py) and clean (evaluate_baseline.py) evaluation, and the noise-aware robust FTTransformer (Robust FTTransformer/r_FTTransformer.py).
-/TRANSFER ATTACK: this folder contains the transfer (black-box) attacks: transfer_attacks.py crafts adversarials on a classical surrogate, transfer_eval.py sends one set to R-QUPID, transfer_heatmap.py builds the source-target transferability matrix.
+/BASELINES: this folder contains the baseline models, one subfolder each (FTTransformer, MTL_LSTM, QH_DNN) with training file and checkpoints, their clean evaluation (evaluate_baseline.py) and their white-box evaluation (fgsm_baseline.py, pgd_baseline.py). FTTransformer/Robust FTTransformer contains r_FTTransformer.py, the FTTransformer trained with Gaussian noise on z-scored features and evaluated with smoothing, and its models (six noise levels on S1; sigma^2 = 0.4 is the one used with fgsm_baseline.py and pgd_baseline.py).
+/TRANSFER ATTACK: this folder contains the transfer (black-box) attacks: transfer_attacks.py crafts adversarials on the classical surrogates, transfer_heatmap.py builds the source-target transferability matrix, transfer_analysis.py compares every target under clean, random and transferred inputs. Adversarial sets in /<scenario>, logs and heatmaps in /results/<scenario>.
+/ADVERSARIAL TRAINING: at_qupid.py trains QUPID with PGD adversarial examples on the 120 MinMax features, at_baseline.py does the same for FTTransformer as classical control. Models in /MODELS_AT, logs and summary in /results/S1.
+/EOT: eot.py, attack with the gradient averaged over the noise of the defense (EoT, Expectation over Transformation). PGD_STEPS = 1 is EoT-FGSM, 20 is EoT-PGD.
 /PARAMETER-SHIFT: this folder reproduces the paper's ~81/79 with the real quantum-native differentiation (parameter-shift), where the input gradient is NaN and the attack is a no-op. Contains copies of r_pqnn.py, fgsm.py, pgd.py, eot.py.
 /QUANTUM-NOISE: Standalone R-QUPID with the channel active (p=0.05) and simulated finite-shot noise, noise-aware training. Result: no robustness gain.
 /CONSISTENCY: Consistency regularization at the sigma where the classical baseline is robust. Result: stuck at the majority class already on the training set.

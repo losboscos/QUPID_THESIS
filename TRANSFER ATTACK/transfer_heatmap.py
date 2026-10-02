@@ -33,7 +33,7 @@ CKPT = {
     "R-QUPID": Path(f"MODELS_R-QUPID/r_qupid_{SCENARIO}_L005.pth"),
 }
 CLEAN_COMPLEX = Path(f"dataset3/scenarios_complex/data{SCENARIO[1:]} Sampled Scenarios_scaled_complex.npz")
-ATTACK_BOUND, NOISE_PROBABILITY, EPS_T, DEL_T = 0.05, 0.0, 20.0, 1e-5
+ATTACK_BOUND, NOISE_PROBABILITY, EPS_T, DEL_T = 0.05, 0.1, 20.0, 1e-5
 N_SMOOTH, SMOOTH_BATCH = 100, 128
 
 class FTTransformerWrapper(nn.Module):

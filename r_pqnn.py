@@ -16,8 +16,8 @@ from dataset import mapping_classes
 n_qubits = 5
 
 SCENARIO = "S1"            # S1, S3, S11, S12
-ATTACK_BOUND = 0.1        # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
-NOISE_PROBABILITY = 0.0
+ATTACK_BOUND = 0.05        # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
+NOISE_PROBABILITY = 0.1
 
 DATASET = Path(f"dataset3/scenarios_complex/data{SCENARIO[1:]} Sampled Scenarios_scaled_complex.npz")
 MODEL_OUT = Path(f"MODELS_R-QUPID/r_qupid_{SCENARIO}_L{str(ATTACK_BOUND).replace('0.', '0')}.pth")

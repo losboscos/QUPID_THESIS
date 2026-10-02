@@ -1,0 +1,24 @@
+Using device: CUDA | model=r_qupid_S1_L005.pth | parameter-shift | subset=100
+Instantiating the Hybrid R-QUPID Model...
+
+Results for FGSM (parameter-shift, eps=0.05):
+Accuracy:  80.00%
+Precision: 0.7141
+Recall:    0.5363
+F1-Score:  0.5822
+ROC-AUC:   0.7826
+MCC:       0.6252
+G-Mean:    0.7017
+mean input-gradient norm: 0.000000
+mean ||x_adv - x||_2:     0.000000
+
+Distribution of Predictions vs Reality:
+Class 0: Predicted 4 times | (In reality there were 5)
+Class 1: Predicted 5 times | (In reality there were 16)
+Class 2: Predicted 0 times | (In reality there were 1)
+Class 3: Predicted 8 times | (In reality there were 8)
+Class 4: Predicted 4 times | (In reality there were 7)
+Class 5: Predicted 79 times | (In reality there were 63)
+------------------------------------------------------------
+grad NaN/0 and ||x_adv - x|| = 0 -> the quantum-native attack is a no-op -> ~81% is the
+clean-smoothed value, i.e. gradient masking, NOT robustness.

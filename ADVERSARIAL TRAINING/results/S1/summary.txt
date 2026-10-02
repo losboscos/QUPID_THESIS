@@ -1,0 +1,19 @@
+Adversarial training, S1 test set (1386 samples). PGD-7-RS training on the 120 MinMax features, eps ramp 50 epochs,
+1/2 clean + 1/2 adversarial loss, 200 epochs, checkpoint chosen on validation PGD-10 MCC. Test attacks: FGSM and PGD-20
+(L-inf, no random start). QUPID runs with NOISE_PROBABILITY = 0 in r_pqnn.py.
+The eps 0.01 runs and the QUPID eps 0.05 run have a full log in this folder; the other rows are the test values recorded
+when those runs finished.
+
+MCC of the AT best checkpoint, attacked at its own training eps
+train eps   model            clean MCC   FGSM MCC   PGD-20 MCC   verdict
+0.05        FTTransformer    +0.430      +0.203     +0.157       not robust
+0.05        QUPID            +0.677      -0.006     -0.100       not robust (on the majority class from epoch 40 to 90)
+0.02        FTTransformer    +0.658      +0.299     +0.265       not robust (last checkpoint +0.284)
+0.02        QUPID            +0.341      +0.021     -0.020       not robust
+0.01        FTTransformer    +0.786      +0.600     +0.569       ROBUST
+0.01        QUPID            +0.589      +0.175     +0.113       not robust
+
+Standard models (no AT), PGD-20 MCC:  eps 0.01  FTTransformer +0.295, QUPID -0.232
+                                      eps 0.02  FTTransformer -0.099, QUPID -0.254
+                                      eps 0.05  FTTransformer -0.237, QUPID -0.262
+No model, with or without AT, keeps a usable PGD-20 MCC at eps 0.05.

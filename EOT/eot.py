@@ -1,3 +1,5 @@
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root on sys.path
 import torch
 import numpy as np
 import math
@@ -15,9 +17,11 @@ from dataset import mapping_classes
 
 SCENARIO = "S1"      # S1, S3, S11, S12
 ATTACK_BOUND = 0.05  # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
-NOISE_PROBABILITY = 0.0   # Quantum noise
+NOISE_PROBABILITY = 0.1   # Quantum noise
 NUM_REAL_DIMENSIONS = 128  # 4 PMUs * 16 feature * 2 (Real, Imag)
-PGD_STEPS = 1            # 1 step corresponds to FGSM
+# 1 step = FGSM from a random start, with the gradient averaged over 30 noise draws (EoT-FGSM).
+# 20 steps = EoT-PGD.
+PGD_STEPS = 20
 
 class QUPIDTorchattacksWrapper(nn.Module):
     """
@@ -165,8 +169,8 @@ def main():
     wrapper_model.eval()
     smoothed_classifier = SmoothQUPID(model, num_classes=6, sigmas_sq=sigmas_sq)
 
-    # epsilons defined as a list of L2 bounds for the EOTPGD attack
-    epsilons = [0.0, 0.05, 0.1]
+    # L-inf bound, same as the training bound of the model (L005 -> 0.05, L01 -> 0.1)
+    epsilons = [ATTACK_BOUND]
 
     for eps in epsilons:
         print(f"\n" + "="*60)
@@ -232,7 +236,7 @@ def main():
         except ValueError:
             roc_auc = 0.0
 
-        print(f"\nResults for EOTPGD (Linf eps={eps}):")
+        print(f"\nResults for EOTPGD (Linf eps={eps}, steps={PGD_STEPS}, eot_iter=30, model {model_name.name}):")
         print(f"Accuracy:  {test_accuracy:.2f}%")
         print(f"Precision: {precision:.4f}")
         print(f"Recall:    {recall:.4f}")

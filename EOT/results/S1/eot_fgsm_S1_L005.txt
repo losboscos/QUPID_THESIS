@@ -1,0 +1,26 @@
+Scenario S1 | L_cons=0.05 | r_qupid_S1_L005.pth
+Using device: CUDA
+Instantiating the Hybrid R-QUPID Model...
+
+============================================================
+EVALUATING EOTPGD ATTACK | FAIR L-inf BOUND = 0.05
+============================================================
+
+Results for EOTPGD (Linf eps=0.05, steps=1, eot_iter=30, model r_qupid_S1_L005.pth):
+Accuracy:  33.33%
+Precision: 0.1504
+Recall:    0.1455
+F1-Score:  0.1462
+ROC-AUC:   0.4842
+MCC:       -0.0589
+G-Mean:    0.3454
+
+Distribution of Predictions vs Reality:
+Class 0: Predicted 99 times | (In reality there were 57)
+Class 1: Predicted 171 times | (In reality there were 178)
+Class 2: Predicted 58 times | (In reality there were 67)
+Class 3: Predicted 113 times | (In reality there were 152)
+Class 4: Predicted 179 times | (In reality there were 102)
+Class 5: Predicted 766 times | (In reality there were 830)
+------------------------------------------------------------
+

@@ -8,10 +8,10 @@ import torch.nn as nn
 import pennylane as qml
 
 n_qubits = 5
-dev = qml.device("default.qubit", wires=n_qubits)
 
 ATTACK_BOUND = 0.05        # [0.05, 0.1] Bound L2 of construction for DP (L_cons)
-NOISE_PROBABILITY = 0.0    # Quantum noise
+NOISE_PROBABILITY = 0.1    # Quantum noise
+dev = qml.device("default.mixed" if NOISE_PROBABILITY > 0 else "default.qubit", wires=n_qubits)
 
 def init_angles(tensor):
     return torch.nn.init.uniform_(tensor, a=-math.pi, b=math.pi)

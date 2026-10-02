@@ -12,14 +12,7 @@ from BASELINES.QH_DNN.QH_DNN import QHDNNModel
 from r_pqnn import QUPIDModel, compute_minimum_dot_product, compute_local_dp_parameters, add_gaussian_noise
 from to_complex import complex_partition
 
-# Analysis of the transfer attacks on R-QUPID:
-# 1. random control: random +-eps perturbations with the same L-inf budget as the adversarial examples
-# 2. size of the perturbation before and after the conversion to complex phasors
-# 3. confusion matrix under transfer
-# 4. FGSM vs PGD
-# 5. the same random and transferred inputs on every target: classical baselines (transfer only),
-#    QUPID without defense, R-QUPID
-SCENARIO = "S12"  # S1, S3, S11, S12
+SCENARIO = "S1"  # S1, S3, S11, S12
 SOURCES = ["FTTransformer", "MTL_LSTM", "QH_DNN"]
 # Only eps = 0.05: the target is the L005 model
 VARIANTS = ["fgsm_005", "pgd_005"]
@@ -29,11 +22,11 @@ EPSILONS = (0.05,)
 ADV_DIR = Path(f"TRANSFER ATTACK/{SCENARIO}")
 MODEL_PATH = Path(f"MODELS_R-QUPID/r_qupid_{SCENARIO}_L005.pth")
 CLEAN_COMPLEX = Path(f"dataset3/scenarios_complex/data{SCENARIO[1:]} Sampled Scenarios_scaled_complex.npz")
-ATTACK_BOUND, NOISE_PROBABILITY, EPS_T, DEL_T = 0.05, 0.0, 20.0, 1e-5
+ATTACK_BOUND, NOISE_PROBABILITY, EPS_T, DEL_T = 0.05, 0.1, 20.0, 1e-5
 N_SMOOTH, SMOOTH_BATCH = 100, 128
 RANDOM_SEED = 0
 SUBSET = None          # None = all the samples in the npz
-ONLY_FRAGILITY = False # True = only section 5, without R-QUPID (fast)
+ONLY_FRAGILITY = False  # True = only section 5, without R-QUPID (fast)
 
 TAG = "" if SCENARIO == "S1" else f"_{SCENARIO}"  # S1 files have no suffix
 QUPID_PATH = Path("MODELS_QUPID/qupid_model_S1 (94.66% acc).pth" if SCENARIO == "S1"

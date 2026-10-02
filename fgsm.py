@@ -13,8 +13,8 @@ from r_pqnn import QUPIDModel, compute_minimum_dot_product, compute_local_dp_par
 from dataset import mapping_classes
 
 SCENARIO = "S1"      # S1, S3, S11, S12
-ATTACK_BOUND = 0.1  # Bound L2 of construction for DP (L_cons)
-NOISE_PROBABILITY = 0.00   # Quantum noise
+ATTACK_BOUND = 0.05  # Bound L2 of construction for DP (L_cons)
+NOISE_PROBABILITY = 0.1   # Quantum noise
 NUM_REAL_DIMENSIONS = 128  # 4 PMUs * 16 feature * 2 (Real, Imag)
 
 class QUPIDTorchattacksWrapper(nn.Module):
@@ -166,7 +166,7 @@ def main():
     sigmas_sq = [sigma_val_1**2, sigma_val_2**2, sigma_val_3**2, sigma_val_4**2]
     smoothed_classifier = SmoothQUPID(model, num_classes=6, sigmas_sq=sigmas_sq)
 
-    epsilons = [0.0, 0.1]
+    epsilons = [0.0, 0.05]
 
     for eps in epsilons:
         print(f"\n" + "="*60)

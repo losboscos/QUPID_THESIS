@@ -15,7 +15,14 @@ from imblearn.metrics import geometric_mean_score
 from collections import Counter
 import math
 
-TRAIN_SIGMA = 0.9487  
+SCENARIO = "S1"   # S1, S3, S11, S12
+SIGMAS_SQ = [0.4]
+MODELS_DIR = Path("BASELINES/FTTransformer/Robust FTTransformer")
+
+def model_path(sigma):
+    if SCENARIO == "S1":
+        return MODELS_DIR / f"r_FTTransformer_s{sigma} ({round(sigma ** 2, 2):g}).pth"
+    return MODELS_DIR / f"r_FTTransformer_{SCENARIO}_s{sigma} ({sigma ** 2:.2f}).pth"
 
 def add_gaussian_noise(x_tensor, sigma):
     # Z-scored features live roughly in [-4, 4], NOT [0, 1]: no clamp here.
@@ -71,10 +78,20 @@ def evaluate(model, loader, sigma, device):
     return total_loss / len(loader), all_targets, all_preds, all_probs
 
 def main():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device} | TRAIN_SIGMA={TRAIN_SIGMA} (sigma^2={TRAIN_SIGMA**2:.3f}) | z-scored features")
+    if SCENARIO not in ("S1", "S3", "S11", "S12"):
+        raise ValueError(f"SCENARIO must be 'S1', 'S3', 'S11' or 'S12', not {SCENARIO!r}")
+    for s2 in SIGMAS_SQ:
+        train(round(math.sqrt(s2), 4))
 
-    dataset = Path("dataset3/scenarios/data1 Sampled Scenarios_scaled.npz")
+def train(TRAIN_SIGMA):
+    out_name = model_path(TRAIN_SIGMA)
+    if out_name.exists():
+        print(f"{out_name} already exists: skipped")
+        return
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device} | {SCENARIO} | TRAIN_SIGMA={TRAIN_SIGMA} (sigma^2={TRAIN_SIGMA**2:.3f}) | z-scored features")
+
+    dataset = Path(f"dataset3/scenarios/data{SCENARIO[1:]} Sampled Scenarios_scaled.npz")
     with np.load(dataset, allow_pickle=True) as data:
         X_all = data['x_train'].astype(np.float32)
         y_all = np.array([mapping_classes(y.item()) for y in data['y_train']], dtype=np.int64)
@@ -109,7 +126,6 @@ def main():
 
     EPOCHS = 200
     best_val_loss = float('inf')
-    out_name = f"r_FTTransformer_s{TRAIN_SIGMA}.pth"
 
     for epoch in range(EPOCHS):
         model.train()

@@ -2,6 +2,7 @@ import os, sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # repo root on sys.path
 from dataset import mapping_classes
 from pathlib import Path
+import re
 import torch
 import numpy as np
 import torch.nn as nn
@@ -15,10 +16,11 @@ from collections import Counter
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_auc_score, matthews_corrcoef
 from imblearn.metrics import geometric_mean_score
 
-MODEL_PATH = Path("BASELINES/FTTransformer/FTTransformer_S1.pth")
-STANDARDIZE = False      # True for z-scored models; False for [0,1] clean baselines
+SCENARIO = "S12"          # S1, S3, S11, S12: selects the dataset
+MODEL_PATH = Path("BASELINES/FTTransformer/Robust FTTransformer/r_FTTransformer_S12_s0.6325 (0.40).pth")
+STANDARDIZE = True      # True for z-scored models; False for [0,1] clean baselines
 FGSM_EPS = 0.05          # L-inf attack budget (applied DIRECTLY, no rescaling)
-SMOOTH_SIGMA = 0.4472    # smoothing sigma (match the model's training sigma)
+SMOOTH_SIGMA = 0.6325    # smoothing sigma (match the model's training sigma)
 N_SMOOTH = 100
 SUBSET_SIZE = 500
 NUM_FEATURES = 120
@@ -81,7 +83,10 @@ class FTTransformerWrapper(nn.Module):
         return self.ft_model(x, None)
 
 def main():
-    dataset_path = Path("dataset3/scenarios/data1 Sampled Scenarios_scaled.npz")
+    dataset_path = Path(f"dataset3/scenarios/data{SCENARIO[1:]} Sampled Scenarios_scaled.npz")
+    tag = re.search(r"_(S\d+)[_.]", MODEL_PATH.name)
+    if tag and tag.group(1) != SCENARIO:
+        raise ValueError(f"{MODEL_PATH.name} is a {tag.group(1)} model but SCENARIO = {SCENARIO}")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device.type.upper()} | model={MODEL_PATH.name} | FGSM eps(Linf)={FGSM_EPS} "
           f"| sigma={SMOOTH_SIGMA} | standardize={STANDARDIZE}")

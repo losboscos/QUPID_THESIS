@@ -16,7 +16,7 @@ from r_pqnn import QUPIDModel, compute_minimum_dot_product, compute_local_dp_par
 
 MODEL_PATH = Path("MODELS_R-QUPID/r_qupid_S1_L005.pth")
 ATTACK_BOUND = 0.05
-NOISE_PROBABILITY = 0.0
+NOISE_PROBABILITY = 0.1
 EPS_T, DEL_T = 20.0, 1e-5
 EPS = 0.05
 EOT_ITER = 5

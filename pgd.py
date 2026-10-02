@@ -14,7 +14,7 @@ from dataset import mapping_classes
 
 SCENARIO = "S1"      # S1, S3, S11, S12
 ATTACK_BOUND = 0.1  # Bound L2 of construction for DP (L_cons)
-NOISE_PROBABILITY = 0.0   # Quantum noise (must match r_pqnn.py: it feeds the sigma computation)
+NOISE_PROBABILITY = 0.1   # Quantum noise (must match r_pqnn.py: it feeds the sigma computation)
 NUM_REAL_DIMENSIONS = 128  # 4 PMUs * 16 feature * 2 (Real, Imag)
 PGD_STEPS = 20
 
